@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>__PREFIX__.fleetdeck-chat</string>
+	<!-- Exec'd directly so the shebang (/usr/bin/python3, a path brew cannot
+	     move) is the job binary. This server spawns and supervises its own
+	     loopback ttyd child - there is deliberately no second LaunchAgent, so
+	     the terminal backend cannot outlive or drift from the UI serving it. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>__ROOT__/chat_server.py</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>__HOME__/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>PORT</key>
+		<string>__CHAT_PORT__</string>
+		<key>TTYD_PORT</key>
+		<string>__TTYD_PORT__</string>
+		<!-- "tailscale" resolves the 100.x address at boot and DEGRADES CLOSED to
+		     loopback if Tailscale is down. That bind is the only thing between
+		     the tailnet and a writable shell, so it must never fall open. -->
+		<key>BIND</key>
+		<string>tailscale</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+	<key>StandardOutPath</key>
+	<string>/tmp/fleetdeck-chat.log</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/fleetdeck-chat.log</string>
+</dict>
+</plist>

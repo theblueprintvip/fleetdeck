@@ -1,0 +1,204 @@
+#!/bin/bash
+# fleetdeck — one launcher page for every server and launchd agent on this Mac,
+# plus the tmux fleet as a chat.
+#
+#   fleetdeck start|stop|restart|status|doctor|url|log|edit|audit
+#   fleetdeck start portal      # just one surface
+#
+# Two LaunchAgents, both serving from the repo directory. Nothing is copied
+# anywhere except this script and the plists — the repo IS the deployment.
+set -uo pipefail
+
+# The repo lives wherever install.sh was run from; that path is written into
+# this line at install time so the installed copy never has to guess.
+ROOT="${FLEETDECK_ROOT:-__ROOT__}"
+# Run straight out of the repo and the token above is still unrendered — so fall
+# back to this script's own parent. Checked by probing for the file rather than
+# by matching the token, because install.sh's sed would rewrite the token here
+# too and the test would then always pass.
+[ -f "$ROOT/config.json" ] || ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CFG="$ROOT/config.json"
+UID_N="$(id -u)"
+LOG_DIR="${TMPDIR:-/tmp}"
+
+if [ ! -f "$CFG" ]; then
+  echo "fleetdeck: no config at $CFG" >&2
+  echo "  (set FLEETDECK_ROOT, or re-run install.sh from the repo)" >&2
+  exit 1
+fi
+
+PY="$(command -v python3 || echo /usr/bin/python3)"
+
+jget() { "$PY" -c "
+import json,sys
+d=json.load(open('$CFG'))
+cur=d
+for k in '$1'.split('.'):
+    cur=cur.get(k) if isinstance(cur,dict) else None
+    if cur is None: break
+print(cur if cur is not None else '$2')
+" 2>/dev/null || echo "$2"; }
+
+PREFIX="$(jget label_prefix com.example)"
+BRAND="$(jget brand fleetdeck)"
+PORTAL_PORT="$(jget ports.portal 8790)"
+CHAT_PORT="$(jget ports.chat 8783)"
+
+P_LABEL="$PREFIX.fleetdeck-portal"
+C_LABEL="$PREFIX.fleetdeck-chat"
+TSBIN="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+host() {
+  local m; m="$(jget machine '')"
+  if [ -n "$m" ] && [ "$m" != "None" ]; then echo "$m"; return; fi
+  "$TSBIN" status --json 2>/dev/null | "$PY" -c '
+import json,sys
+try: print(json.load(sys.stdin)["Self"]["DNSName"].rstrip("."))
+except Exception: print("")' 2>/dev/null || echo ""
+}
+
+# The portal binds loopback and is fronted by `tailscale serve`, so its URL is
+# https. The chat binds the tailnet address directly, so its URL is http. Get
+# this backwards and you hand someone a link that 400s — which is exactly what
+# the upstream tool did.
+purl() { local h; h="$(host)"; [ -n "$h" ] && echo "https://$h:$PORTAL_PORT" || echo "http://127.0.0.1:$PORTAL_PORT"; }
+curl_() { local h; h="$(host)"; [ -n "$h" ] && echo "http://$h:$CHAT_PORT" || echo "(no tailnet)"; }
+
+loaded() { launchctl print "gui/$UID_N/$1" >/dev/null 2>&1; }
+pid_of() { launchctl list 2>/dev/null | awk -v l="$1" '$3==l{print $1}'; }
+
+boot() {  # boot <label>
+  local plist="$HOME/Library/LaunchAgents/$1.plist"
+  [ -f "$plist" ] || { echo "  ! no plist for $1 — run ./install.sh"; return 1; }
+  if loaded "$1"; then
+    launchctl bootout "gui/$UID_N/$1" 2>/dev/null
+    # bootout is ASYNCHRONOUS. Bootstrapping before the old job has finished
+    # tearing down fails, and there is nothing bootstrapped left to kickstart
+    # as a fallback — so wait for it to actually be gone.
+    for _ in $(seq 20); do loaded "$1" || break; sleep 0.3; done
+  fi
+  if err="$(launchctl bootstrap "gui/$UID_N" "$plist" 2>&1)"; then
+    echo "  ✓ $1"
+  else
+    echo "  ! $1 failed: ${err:-unknown}"
+  fi
+}
+
+serve_front() {
+  # The portal is loopback-bound on purpose; this is what makes it reachable,
+  # with a real cert, as a secure origin. Idempotent.
+  [ -x "$TSBIN" ] || { echo "  ~ tailscale not found — portal stays loopback-only"; return; }
+  if "$TSBIN" serve status 2>/dev/null | grep -q ":$PORTAL_PORT"; then
+    echo "  = tailscale serve :$PORTAL_PORT (already)"
+  else
+    if "$TSBIN" serve --bg --https="$PORTAL_PORT" "http://127.0.0.1:$PORTAL_PORT" >/dev/null 2>&1; then
+      echo "  + tailscale serve :$PORTAL_PORT"
+    else
+      echo "  ! tailscale serve failed — need 'tailscale cert' / HTTPS enabled on the tailnet?"
+    fi
+  fi
+}
+
+case "${1:-status}" in
+  start)
+    which="${2:-all}"
+    [ "$which" = all ] || [ "$which" = portal ] && { boot "$P_LABEL"; serve_front; }
+    [ "$which" = all ] || [ "$which" = chat ]   && boot "$C_LABEL"
+    sleep 2; exec "$0" status
+    ;;
+  stop)
+    which="${2:-all}"
+    [ "$which" = all ] || [ "$which" = portal ] && launchctl bootout "gui/$UID_N/$P_LABEL" 2>/dev/null && echo "  - portal"
+    [ "$which" = all ] || [ "$which" = chat ]   && launchctl bootout "gui/$UID_N/$C_LABEL" 2>/dev/null && echo "  - chat"
+    ;;
+  restart) exec "$0" start "${2:-all}" ;;
+  url)
+    echo "portal  $(purl)"
+    echo "chat    $(curl_)"
+    ;;
+  log)
+    tail -n "${2:-60}" "$LOG_DIR/fleetdeck-portal.log" "$LOG_DIR/fleetdeck-chat.log" 2>/dev/null
+    ;;
+  edit)  exec "${EDITOR:-vi}" "$ROOT/services.json" ;;
+  audit) exec "$PY" "$ROOT/audit.py" "${@:2}" ;;
+  status|doctor)
+    v="$(cat "$ROOT/VERSION" 2>/dev/null || echo '?')"
+    [ "$BRAND" = "fleetdeck" ] && banner="fleetdeck $v" || banner="$BRAND · fleetdeck $v"
+    echo "▩ $banner  —  $ROOT"
+    echo
+    for pair in "portal:$P_LABEL:$PORTAL_PORT" "chat:$C_LABEL:$CHAT_PORT"; do
+      IFS=: read -r n l p <<<"$pair"
+      pid="$(pid_of "$l")"
+      if [ -n "$pid" ] && [ "$pid" != "-" ]; then st="up   pid $pid"
+      elif loaded "$l";                    then st="loaded, not running"
+      else                                      st="DOWN"; fi
+      listening="$(lsof -nP -iTCP:"$p" -sTCP:LISTEN -t 2>/dev/null | head -1)"
+      echo "  $n	:$p	$st	$([ -n "$listening" ] && echo "listening" || echo "not listening")"
+    done
+    echo
+    echo "  portal  $(purl)"
+    echo "  chat    $(curl_)"
+    [ "${1:-}" = doctor ] || exit 0
+
+    echo
+    echo "── dependencies ──"
+    for b in tmux ttyd python3; do
+      w="$(command -v "$b" 2>/dev/null)"
+      echo "  $([ -n "$w" ] && echo "✓" || echo "✗") $b	${w:-MISSING}"
+    done
+    echo "  $([ -x "$TSBIN" ] && echo "✓" || echo "✗") tailscale	$TSBIN"
+    echo
+    echo "── tailscale serve ──"
+    "$TSBIN" serve status 2>/dev/null | sed 's/^/  /' || echo "  (unavailable)"
+    echo
+    echo "── drift ──"
+    for l in "$P_LABEL" "$C_LABEL"; do
+      src="$ROOT/launchagents/$(echo "$l" | sed "s/^$PREFIX\.//").plist"
+      dst="$HOME/Library/LaunchAgents/$l.plist"
+      [ -f "$dst" ] || { echo "  ! $l.plist NOT INSTALLED"; continue; }
+      echo "  = $l.plist installed"
+    done
+    # The installed CLI is a RENDERED copy, so comparing it to the repo's
+    # template always differs. Render into a temp file and compare that.
+    self="$(command -v fleetdeck 2>/dev/null)"
+    if [ -n "$self" ]; then
+      # Build the token at runtime. Spelled literally, install.sh's own
+      # substitution would rewrite it HERE too, and this check would then
+      # compare the template against itself-with-a-different-path and report
+      # permanent false drift.
+      tok="$(printf '__%s__' ROOT)"
+      t="$(mktemp)"; sed "s|$tok|$ROOT|g" "$ROOT/bin/fleetdeck" > "$t"
+      cmp -s "$t" "$self" \
+        && echo "  = $self current" \
+        || echo "  ! $self differs from the repo — re-run ./install.sh"
+      rm -f "$t"
+    fi
+    echo
+    echo "── agents seen by the portal ──"
+    # Python source is single-quoted for the shell, so it must contain NO
+    # single quotes and no backslash-escaped doubles — hence the plain string
+    # concatenation below rather than f-strings with quoted keys.
+    curl -s --max-time 5 "http://127.0.0.1:$PORTAL_PORT/api/status" 2>/dev/null | "$PY" -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    print("  (portal not answering)")
+    raise SystemExit
+a = d.get("agents", [])
+n = {}
+for x in a:
+    n[x["health"]] = n.get(x["health"], 0) + 1
+print("  %d agents: %s" % (len(a), ", ".join("%d %s" % (v, k) for k, v in sorted(n.items()))))
+for x in a:
+    if x["health"] in ("fail", "off"):
+        print("    %-5s %s  (%s, exit %s)" % (x["health"], x["name"], x["schedule"], x["exit"]))
+print("  %d registered services, %d unregistered listeners"
+      % (len(d.get("services", [])), len(d.get("extra", []))))
+'
+    ;;
+  *)
+    sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'
+    exit 1
+    ;;
+esac

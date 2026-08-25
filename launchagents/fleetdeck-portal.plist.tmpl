@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>__PREFIX__.fleetdeck-portal</string>
+	<!-- python3 by absolute path, not the shebang: this file is generated and
+	     copied, and an env-based shebang would resolve against launchd's PATH
+	     rather than the operator's. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>__PYTHON__</string>
+		<string>__ROOT__/portal_server.py</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<!-- lsof, launchctl and tailscale are all shelled out to; launchd's
+		     default PATH contains none of the places brew puts things. -->
+		<key>PATH</key>
+		<string>__HOME__/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>FLEETDECK_PORT</key>
+		<string>__PORTAL_PORT__</string>
+		<!-- Loopback ON PURPOSE. `tailscale serve` fronts this with a real
+		     Let's Encrypt cert, which is what makes it a secure origin (PWA,
+		     Add to Home Screen) and what stops iOS Safari's HTTPS-upgrade from
+		     failing the handshake. `fleetdeck start` sets that front up. -->
+		<key>FLEETDECK_BIND</key>
+		<string>127.0.0.1</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+	<key>StandardOutPath</key>
+	<string>/tmp/fleetdeck-portal.log</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/fleetdeck-portal.log</string>
+</dict>
+</plist>

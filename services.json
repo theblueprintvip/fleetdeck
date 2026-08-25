@@ -1,0 +1,25 @@
+{
+  "_comment": "fleetdeck service registry. Hot-reloaded on every scan — adding an app is one entry, no restart. 'port' is the LOCAL listening port; the portal resolves the reachable URL at runtime from lsof binds + `tailscale serve` mappings, so you never hardcode a link that can rot. 'kind':'api' = answers HTTP but has no browser UI, so it is shown but never linked (a tap can't land on a 404). Optional 'path' is appended to the resolved URL.",
+
+  "_curation": "This ships nearly empty ON PURPOSE. Everything listening that is NOT registered here appears under 'unregistered' at the bottom of the board with its process name and port. Run the portal, look at that list, and promote the ones that matter into 'services' with a real name, blurb and icon. That beats shipping a wall of offline tiles for apps this machine does not run.",
+
+  "_icons": "terminal chat messages gauge board grid brain sparkle gallery chip compass book scroll flask cpu waveform rocket glasses film orb play speaker vr layers mail search database archive server clock bolt loop eye hand",
+
+  "groups": [
+    { "id": "fleet",  "label": "fleet"  },
+    { "id": "apps",   "label": "apps"   },
+    { "id": "models", "label": "models" },
+    { "id": "data",   "label": "data"   }
+  ],
+
+  "services": [
+    {
+      "id": "chat",
+      "group": "fleet",
+      "port": 8783,
+      "icon": "chat",
+      "name": "Chat",
+      "blurb": "tmux fleet as a thread list"
+    }
+  ]
+}

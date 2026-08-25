@@ -1,0 +1,38 @@
+{
+  "_comment": "fleetdeck config. Everything identity-shaped lives here — no branding, hostname or launchd label is hardcoded in the servers. Change these, run ./install.sh, done.",
+
+  "_brand": "Shown in the header and the PWA name. Keep it short; it is uppercased in the UI.",
+  "brand": "fleetdeck",
+
+  "_machine": "This machine's Tailscale MagicDNS name, e.g. studio.tailXXXX.ts.net. Leave EMPTY to resolve it from Tailscale at boot — which is what you want. Only set it if Tailscale is not installed and you are fronting the portal some other way.",
+  "machine": "",
+
+  "_label_prefix": "Reverse-domain prefix for this operator's own launchd jobs, e.g. com.acme. Used two ways: install.sh names the fleetdeck agents with it, and the portal strips it from agent tile names so the board reads 'backup-nightly' instead of 'com.acme.backup-nightly'.",
+  "label_prefix": "com.example",
+
+  "_ports": "portal = the launcher. chat = the tmux fleet chat. ttyd = chat's private terminal backend; it binds loopback only and is proxied under /t, never linked.",
+  "ports": {
+    "portal": 8790,
+    "chat": 8783,
+    "ttyd": 8784
+  },
+
+  "chat": {
+    "_exclude_sessions": "tmux sessions to keep out of the hue rotation — typically one backing a plain ttyd terminal, which would otherwise fight the others for window size.",
+    "exclude_sessions": ["tunnel"]
+  },
+
+  "agents": {
+    "_show": "Render launchd agents as tiles.",
+    "show": true,
+
+    "_actions": "Adds run/stop buttons to every agent tile. This surface has NO password — the tailnet bind is the only boundary — so leaving this false keeps the portal strictly read-only. Turn it on only if every tailnet device is trusted to restart jobs. The POST route also refuses any label the scan did not discover.",
+    "actions": false,
+
+    "_include": "Substring match on the label. EMPTY = every non-vendor agent in ~/Library/LaunchAgents. Set to [\"com.acme.\"] to show only this operator's own jobs.",
+    "include": [],
+
+    "_exclude": "Substring match, applied after include. Use for noisy jobs the operator never acts on.",
+    "exclude": []
+  }
+}
