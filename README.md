@@ -1,5 +1,8 @@
 # fleetdeck — `1.0.0`
 
+**Your Mac's servers and launchd agents, as one launcher board on your phone.**
+Plus the tmux fleet as a chat. Tailnet-only, stdlib Python, no build step.
+
 Two browser surfaces for one Mac, reachable from a phone over Tailscale:
 
 | surface | port | what it is |
