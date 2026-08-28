@@ -137,7 +137,8 @@ def inspect(url):
 
     r = {"ok": True, "url": url, "name": name, "dest": dest, "scratch": scratch,
          "warnings": [], "blockers": [], "env": [], "stack": "unknown",
-         "entry": None, "declared_port": None, "install": None}
+         "entry": None, "declared_port": None, "install": None,
+         "workdir": None}
 
     if os.path.exists(dest):
         r["blockers"].append(f"{dest} already exists — move it or pick another name")
@@ -239,8 +240,15 @@ def inspect(url):
             if others:
                 note.append(f"other workspaces that could also start: "
                             f"{', '.join(others)}")
-            candidates.append((stack, f"npm run {sentry} --prefix {sub}",
-                               "npm ci", note))
+            r["workdir"] = sub
+            # npm ci at the ROOT only installs the root's own deps unless the
+            # root declares `workspaces`. This repo did not, so the app's
+            # dependencies — vite included — were never fetched and the job
+            # died on `vite: command not found`. Install where the app is.
+            root_ws = bool((pkg or {}).get("workspaces"))
+            candidates.append((stack, f"npm run {sentry}",
+                               "npm ci" if root_ws else f"npm ci --prefix {sub}",
+                               note))
 
     runnable = next((c for c in candidates if c[1]), None)
     chosen = runnable or (candidates[0] if candidates else None)
@@ -285,6 +293,20 @@ def inspect(url):
     elif r["declared_port"] and r["port"] != r["declared_port"]:
         r["warnings"].append(f"declares port {r['declared_port']}, which is "
                              f"taken — assigned {r['port']}")
+
+    # Vite pins server.allowedHosts to localhost/127.0.0.1/.local unless HOST
+    # is 0.0.0.0. `tailscale serve` forwards the original Host, so the tailnet
+    # name gets a flat 403 while loopback works fine — the tile looks alive
+    # from the Mac and dead from the phone. Two surfaces on this box have been
+    # caught by it. The fix is a skin front, which rewrites Host to
+    # 127.0.0.1; binding 0.0.0.0 instead would hand the app's API keys to
+    # anything that can reach the machine.
+    if "Vite" in r["stack"]:
+        r["warnings"].append(
+            "Vite rejects an unrecognised Host, so it will 403 behind "
+            "tailscale serve — give it a skin front (see skin_server.py) "
+            "rather than binding 0.0.0.0")
+
 
     lic = next((f for f in ("LICENSE", "LICENSE.md", "COPYING")
                 if has(f)), None)
@@ -354,6 +376,7 @@ def adopt(plan, env_values=None, glyph="server", group="apps", label_prefix=None
                     + ("" if rc == 0 else f" failed: {out.strip()[-300:]}")):
             return {"ok": False, "steps": steps}
 
+    workdir = os.path.join(dest, plan["workdir"]) if plan.get("workdir") else dest
     label = f"{label_prefix or 'com.example'}.{name}"
     plist = os.path.join(HOME, "Library", "LaunchAgents", f"{label}.plist")
     entry = plan["entry"]
@@ -363,7 +386,7 @@ def adopt(plan, env_values=None, glyph="server", group="apps", label_prefix=None
         entry = f"{entry} -- --host 127.0.0.1 --port {port}"
 
     with open(plist, "w") as fh:
-        fh.write(PLIST.format(label=label, dest=dest, entry=_xml(entry),
+        fh.write(PLIST.format(label=label, dest=workdir, entry=_xml(entry),
                               port=port, home=HOME, name=name))
     step(True, f"plist {label}")
 
