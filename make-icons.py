@@ -153,7 +153,11 @@ def publish(sid, dest, maskable=False):
     dest = os.path.expanduser(dest)
     os.makedirs(dest, exist_ok=True)
     for size in SIZES:
-        shutil.copy2(sid_png(sid, size), os.path.join(dest, f"{sid}-{size}.png"))
+        src, dst = sid_png(sid, size), os.path.join(dest, f"{sid}-{size}.png")
+        # icon_dest pointing at icons/ itself is a plausible mistake, and
+        # copy2 raises SameFileError rather than shrugging.
+        if os.path.abspath(src) != os.path.abspath(dst):
+            shutil.copy2(src, dst)
     if maskable:
         shutil.copy2(sid_png(sid, "maskable-512"),
                      os.path.join(dest, f"{sid}-maskable-512.png"))
