@@ -80,7 +80,7 @@ DEFAULTS = {
     "brand": "fleetdeck",
     "machine": "",           # "" → resolved from Tailscale at boot
     "label_prefix": "",      # e.g. "com.acme" — stripped from agent tile names
-    "ports": {"portal": 8790, "chat": 8783, "ttyd": 8784},
+    "ports": {"portal": 8790, "chat": 8783, "ttyd": 8784, "adopt": 8793},
     "agents": {"show": True, "actions": False, "include": [], "exclude": []},
 }
 

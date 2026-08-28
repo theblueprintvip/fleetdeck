@@ -10,6 +10,7 @@ Two browser surfaces for one Mac, reachable from a phone over Tailscale:
 | **portal** | 8790 | One tile per local **server** and per **launchd agent**. Installs to the home screen as a PWA. |
 | **chat** | 8783 | The whole **tmux fleet as a Messages-style thread list**. Tap a session, get a live writable terminal. |
 | **skin** | per app | Optional. Fronts an app you *cannot* edit — a container — so it installs with your icon and palette. Idle until you configure one. |
+| **adopt** | 8793 | Paste a repo URL, read the plan, press Adopt. Loopback only by default — it installs software. |
 
 Plus one internal: **:8784**, a loopback-only `ttyd` that is the chat's terminal
 backend. It is never reachable directly — `chat_server.py` proxies it under `/t`.
@@ -251,6 +252,52 @@ block within a few seconds. No restart.
 
 ---
 
+## Adopting a repo
+
+Standing up an app by hand is a dozen steps and four traps, and the steps are
+the same every time. `adopt` does the mechanical part:
+
+```bash
+fleetdeck adopt https://github.com/owner/thing        # prints the plan, runs nothing
+fleetdeck adopt https://github.com/owner/thing --yes  # and installs it
+```
+
+…or paste the URL into the **adopt** surface and press a button.
+
+**Two phases, and the split is the point.** `inspect` clones to a scratch
+directory and only *reads*: the stack, the entry command, the port the project
+declares, the environment variables with no value in its example file, whether
+it has install lifecycle scripts, its licence, its remote — plus a port this
+machine can actually give it, checked against both the registry and everything
+currently listening.
+
+`adopt` is the half that executes, and only after you have seen that report.
+This matters more than it looks: `npm install` runs lifecycle scripts from
+every transitive dependency, and these surfaces have **no password**. A
+one-click installer that skipped the report would be a remote-code-execution
+button for anything that can reach the board.
+
+Then it does the rest of the runbook: move into `~/srv/<name>`, install deps,
+write `.env`, render and bootstrap a launchd agent, **check the exit status**,
+add a `tailscale serve` mapping, register a tile, generate the icon.
+
+It refuses to install into `~/Documents`, `~/Desktop` or `~/Downloads` (TCC —
+launchd cannot read them), to overwrite an existing directory, or to take a
+port something already holds. It never pushes.
+
+**Docker repos are detected, not adopted.** A container is daemon-managed with
+its own restart policy, not a launchd job, and pretending otherwise would
+produce a tile that lies about what runs it. A repo that ships a Dockerfile
+*next to* a normal start script is adopted natively, and says so.
+
+> **The adopt agent binds loopback and `install.sh` does not give it a
+> `tailscale serve` front.** Every other surface here reads state; this one
+> installs software. Reach it with an SSH tunnel, or add the mapping yourself
+> once you have decided every tailnet device should be able to install things
+> on this Mac.
+
+---
+
 ## Security posture
 
 There is no password anywhere in the request path. What protects these surfaces:
@@ -325,6 +372,8 @@ services.json        the tile registry, hot-reloaded     ← and this
 glyphs.json          the line-glyph library              ← and this, to add icons
 assets/glyphs/       every glyph, pre-rendered           ← so a clone needs no browser
 portal_server.py     discovery + page + PWA + agent API
+adopt.py             clone, read, plan, install  (engine + CLI)
+adopt_server.py      the paste-a-URL surface
 chat_server.py       tmux thread list + ttyd proxy
 skin_server.py       dresses apps you cannot edit
 make-icons.py        glyphs.json → home-screen PNGs
@@ -351,6 +400,7 @@ fleetdeck url                     the two links (portal is https, chat is http)
 fleetdeck log [n]
 fleetdeck edit                    $EDITOR services.json
 fleetdeck icons [id...]           rasterise glyphs into home-screen PNGs
+fleetdeck adopt <url> [--yes]     inspect a repo; --yes installs it
 fleetdeck audit                   verify every tile's claim
 ```
 

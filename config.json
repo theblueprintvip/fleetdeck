@@ -10,11 +10,12 @@
   "_label_prefix": "Reverse-domain prefix for this operator's own launchd jobs, e.g. com.acme. Used two ways: install.sh names the fleetdeck agents with it, and the portal strips it from agent tile names so the board reads 'backup-nightly' instead of 'com.acme.backup-nightly'.",
   "label_prefix": "com.example",
 
-  "_ports": "portal = the launcher. chat = the tmux fleet chat. ttyd = chat's private terminal backend; it binds loopback only and is proxied under /t, never linked.",
+  "_ports": "portal = the launcher. chat = the tmux fleet chat. ttyd = chat's private terminal backend; it binds loopback only and is proxied under /t, never linked. adopt = the install surface; it is NOT given a tailscale serve mapping by install.sh, because it installs software \u2014 see the README before exposing it.",
   "ports": {
     "portal": 8790,
     "chat": 8783,
-    "ttyd": 8784
+    "ttyd": 8784,
+    "adopt": 8793
   },
 
   "chat": {

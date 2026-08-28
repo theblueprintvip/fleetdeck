@@ -50,16 +50,17 @@ done
 
 [ -f "$HERE/config.json" ] || { echo "  ✗ no config.json"; exit 1; }
 
-read -r PREFIX PORTAL_PORT CHAT_PORT TTYD_PORT <<<"$("$PY" - "$HERE/config.json" <<'EOF'
+read -r PREFIX PORTAL_PORT CHAT_PORT TTYD_PORT ADOPT_PORT <<<"$("$PY" - "$HERE/config.json" <<'EOF'
 import json,sys
 d=json.load(open(sys.argv[1]))
 p=d.get("ports",{})
 print(d.get("label_prefix","com.example").rstrip("."),
-      p.get("portal",8790), p.get("chat",8783), p.get("ttyd",8784))
+      p.get("portal",8790), p.get("chat",8783), p.get("ttyd",8784),
+      p.get("adopt",8793))
 EOF
 )"
 echo "  prefix     $PREFIX"
-echo "  ports      portal:$PORTAL_PORT chat:$CHAT_PORT ttyd:$TTYD_PORT (loopback)"
+echo "  ports      portal:$PORTAL_PORT chat:$CHAT_PORT ttyd:$TTYD_PORT adopt:$ADOPT_PORT (loopback)"
 echo "  python3    $PY"
 echo
 
@@ -87,6 +88,7 @@ for t in "$HERE"/launchagents/*.plist.tmpl; do
       -e "s|__PORTAL_PORT__|$PORTAL_PORT|g" \
       -e "s|__CHAT_PORT__|$CHAT_PORT|g" \
       -e "s|__TTYD_PORT__|$TTYD_PORT|g" \
+      -e "s|__ADOPT_PORT__|$ADOPT_PORT|g" \
       "$t" > "$tmp"
   if cmp -s "$tmp" "$out"; then echo "  = $out (current)"
   else cp "$tmp" "$out" && echo "  + $out"; fi
@@ -107,7 +109,8 @@ fi
 
 echo
 echo "loading agents…"
-for l in "$PREFIX.fleetdeck-portal" "$PREFIX.fleetdeck-chat"; do
+for t in "$HERE"/launchagents/*.plist.tmpl; do
+  l="$PREFIX.$(basename "$t" .plist.tmpl)"
   if launchctl print "gui/$UID_N/$l" >/dev/null 2>&1; then
     launchctl bootout "gui/$UID_N/$l" 2>/dev/null
     # bootout is ASYNCHRONOUS. Bootstrapping before the old job has finished

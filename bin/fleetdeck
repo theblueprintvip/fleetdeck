@@ -2,9 +2,10 @@
 # fleetdeck — one launcher page for every server and launchd agent on this Mac,
 # plus the tmux fleet as a chat.
 #
-#   fleetdeck start|stop|restart|status|doctor|url|log|edit|audit|icons
+#   fleetdeck start|stop|restart|status|doctor|url|log|edit|audit|icons|adopt
 #   fleetdeck start portal      # just one surface
 #   fleetdeck icons             # regenerate home-screen icons from glyphs.json
+#   fleetdeck adopt <repo-url>  # inspect a repo; add --yes to install it
 #
 # Three LaunchAgents, all serving from the repo directory. Nothing is copied
 # anywhere except this script and the plists — the repo IS the deployment.
@@ -48,6 +49,7 @@ CHAT_PORT="$(jget ports.chat 8783)"
 P_LABEL="$PREFIX.fleetdeck-portal"
 C_LABEL="$PREFIX.fleetdeck-chat"
 S_LABEL="$PREFIX.fleetdeck-skin"
+A_LABEL="$PREFIX.fleetdeck-adopt"
 TSBIN="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
 host() {
@@ -107,6 +109,7 @@ case "${1:-status}" in
     [ "$which" = all ] || [ "$which" = portal ] && { boot "$P_LABEL"; serve_front; }
     [ "$which" = all ] || [ "$which" = chat ]   && boot "$C_LABEL"
     [ "$which" = all ] || [ "$which" = skin ]   && boot "$S_LABEL"
+    [ "$which" = all ] || [ "$which" = adopt ]  && boot "$A_LABEL"
     sleep 2; exec "$0" status
     ;;
   stop)
@@ -114,6 +117,7 @@ case "${1:-status}" in
     [ "$which" = all ] || [ "$which" = portal ] && launchctl bootout "gui/$UID_N/$P_LABEL" 2>/dev/null && echo "  - portal"
     [ "$which" = all ] || [ "$which" = chat ]   && launchctl bootout "gui/$UID_N/$C_LABEL" 2>/dev/null && echo "  - chat"
     [ "$which" = all ] || [ "$which" = skin ]   && launchctl bootout "gui/$UID_N/$S_LABEL" 2>/dev/null && echo "  - skin"
+    [ "$which" = all ] || [ "$which" = adopt ]  && launchctl bootout "gui/$UID_N/$A_LABEL" 2>/dev/null && echo "  - adopt"
     ;;
   restart) exec "$0" start "${2:-all}" ;;
   url)
@@ -122,12 +126,14 @@ case "${1:-status}" in
     ;;
   log)
     tail -n "${2:-60}" "$LOG_DIR/fleetdeck-portal.log" "$LOG_DIR/fleetdeck-chat.log" \
-         "$LOG_DIR/fleetdeck-skin.log" 2>/dev/null
+         "$LOG_DIR/fleetdeck-skin.log" "$LOG_DIR/fleetdeck-adopt.log" 2>/dev/null
     ;;
   edit)  exec "${EDITOR:-vi}" "$ROOT/services.json" ;;
   # Rasterise the board's glyphs into home-screen PNGs. Safe to re-run; it is
   # how you pick up a new service, a changed glyph, or a restyle.
   icons) exec "$PY" "$ROOT/make-icons.py" "${@:2}" ;;
+  # Inspect prints the plan and executes nothing. --yes runs the install.
+  adopt) exec "$PY" "$ROOT/adopt.py" "${@:2}" ;;
   audit) exec "$PY" "$ROOT/audit.py" "${@:2}" ;;
   status|doctor)
     v="$(cat "$ROOT/VERSION" 2>/dev/null || echo '?')"

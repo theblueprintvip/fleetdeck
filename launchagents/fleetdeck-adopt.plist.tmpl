@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>__PREFIX__.fleetdeck-adopt</string>
+	<!-- The install surface: paste a repo URL, read the plan, press Adopt.
+	     Inspect only clones and reads; nothing from a repo runs until the
+	     second request. That split is the security model, not a nicety. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>__ROOT__/adopt_server.py</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>__HOME__/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>FLEETDECK_ADOPT_PORT</key>
+		<string>__ADOPT_PORT__</string>
+		<!-- Loopback, and install.sh deliberately does NOT add a
+		     `tailscale serve` front for this one. Every other surface here
+		     reads state; this one installs software, and the boundary should be
+		     a decision you make rather than one you inherit. Reach it with an
+		     SSH tunnel, or add the mapping yourself once you have read the
+		     Security posture section of the README. -->
+		<key>FLEETDECK_ADOPT_BIND</key>
+		<string>127.0.0.1</string>
+	</dict>
+	<key>WorkingDirectory</key>
+	<string>__ROOT__</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>15</integer>
+	<key>StandardOutPath</key>
+	<string>/tmp/fleetdeck-adopt.log</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/fleetdeck-adopt.log</string>
+</dict>
+</plist>
