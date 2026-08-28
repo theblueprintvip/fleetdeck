@@ -199,6 +199,49 @@ def inspect(url):
     if has("index.html"):
         candidates.append(("static", "python3 -m http.server", None, []))
 
+    # A monorepo's root package.json is often just tooling — husky, prettier,
+    # eslint — and the app that actually serves lives one directory down. So if
+    # the root yields nothing runnable, look one level in. One level only:
+    # deeper than that and it stops being a guess and starts being a search.
+    if not any(c[1] for c in candidates):
+        found = []
+        for sub in sorted(os.listdir(clone)):
+            subdir = os.path.join(clone, sub)
+            if sub.startswith(".") or not os.path.isdir(subdir):
+                continue
+            spkg = load(os.path.join(subdir, "package.json"), None)
+            if not spkg:
+                continue
+            sscripts = spkg.get("scripts", {}) or {}
+            sentry = next((c for c in ("dev", "start", "serve", "preview")
+                           if c in sscripts), None)
+            if not sentry:
+                continue
+            cmd = sscripts[sentry]
+            fw = next((f for f in ("vite", "next", "astro", "remix")
+                       if f in cmd), None)
+            # Score, do not take the first. A monorepo usually has several
+            # workspaces with a `dev` script, and the alphabetically-first one
+            # is as likely to be the CLI as the app — GitNexus ships
+            # `gitnexus/` (bin: gitnexus, dev: tsx watch) before
+            # `gitnexus-web/` (dev: vite). What separates them is that one's
+            # dev script actually invokes a web framework and the other
+            # declares a binary.
+            score = (2 if fw else 0) - (2 if spkg.get("bin") else 0) \
+                + (1 if re.search(r"web|app|client|ui|site", sub, re.I) else 0)
+            stack = f"node · {fw.title() if fw else 'workspace'} · {sub}/"
+            found.append((score, sub, stack, sentry))
+        if found:
+            found.sort(key=lambda x: -x[0])
+            _, sub, stack, sentry = found[0]
+            others = [f"{s}/" for _, s, _, _ in found[1:]]
+            note = [f"the app is in {sub}/, not the repo root"]
+            if others:
+                note.append(f"other workspaces that could also start: "
+                            f"{', '.join(others)}")
+            candidates.append((stack, f"npm run {sentry} --prefix {sub}",
+                               "npm ci", note))
+
     runnable = next((c for c in candidates if c[1]), None)
     chosen = runnable or (candidates[0] if candidates else None)
     if chosen:
