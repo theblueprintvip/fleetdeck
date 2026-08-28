@@ -60,6 +60,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 GLYPHS = os.path.join(HERE, "glyphs.json")
 REGISTRY = os.path.join(HERE, "services.json")
 OUT = os.path.join(HERE, "icons")
+# Every glyph, pre-rendered and shipped in the repo. This is what makes a fresh
+# clone work without a browser: with no Chromium, a service's icon is copied
+# from here instead of rasterised. Regenerate with --library after changing a
+# glyph or the palette; that one needs a browser.
+LIBRARY = os.path.join(HERE, "assets", "glyphs")
 
 # Any Chromium will do; the first one that exists wins.
 CHROME_CANDIDATES = [
@@ -81,11 +86,15 @@ SIZES = (512, 192, 180)
 
 
 def chrome():
+    """The rasteriser, or None. Absent is not fatal — see LIBRARY.
+    FLEETDECK_CHROME=none forces the shipped renders, which is also how you
+    check what a browserless machine will get."""
+    if os.environ.get("FLEETDECK_CHROME") == "none":
+        return None
     for c in CHROME_CANDIDATES:
         if c and os.path.exists(c):
             return c
-    sys.exit("make-icons: no Chromium found. Install Google Chrome, or set "
-             "FLEETDECK_CHROME=/path/to/browser")
+    return None
 
 
 def load(path):
@@ -93,7 +102,7 @@ def load(path):
         return json.load(fh)
 
 
-def render_glyph(paths, out512, fill=FILL):
+def render_glyph(paths, out512, fill=FILL, browser=None):
     """Rasterise one glyph at 512. The fitting maths runs in the page, where a
     real layout engine can measure the path — Chrome has finished executing it
     before --screenshot fires."""
@@ -118,7 +127,7 @@ def render_glyph(paths, out512, fill=FILL):
         page = fh.name
     try:
         subprocess.run(
-            [chrome(), "--headless", "--disable-gpu", "--hide-scrollbars",
+            [browser, "--headless", "--disable-gpu", "--hide-scrollbars",
              "--force-device-scale-factor=1", f"--screenshot={out512}",
              "--window-size=512,512", f"file://{page}"],
             check=True, capture_output=True,
@@ -150,15 +159,68 @@ def publish(sid, dest, maskable=False):
                      os.path.join(dest, f"{sid}-maskable-512.png"))
 
 
+def lib_png(key, size):
+    return os.path.join(LIBRARY, f"{key}-{size}.png")
+
+
+def build_library(glyphs, browser):
+    """Pre-render every glyph, service-agnostic, into assets/glyphs.
+
+    Shipped in the repo so a clone has the whole icon set on arrival and a
+    machine with no browser still ends up with real icons. Maintainer command —
+    run it after changing a glyph, BG, INK, STROKE or FILL, and commit the
+    result."""
+    if not browser:
+        sys.exit("make-icons --library: needs a Chromium to rasterise. Install "
+                 "one, or set FLEETDECK_CHROME=/path/to/browser.")
+    os.makedirs(LIBRARY, exist_ok=True)
+    for key, paths in sorted(glyphs.items()):
+        render_glyph(paths, lib_png(key, 512), browser=browser)
+        for size in SIZES[1:]:
+            subprocess.run(["sips", "-z", str(size), str(size), lib_png(key, 512),
+                            "--out", lib_png(key, size)],
+                           check=True, capture_output=True)
+        render_glyph(paths, lib_png(key, "maskable-512"), fill=MASK_FILL,
+                     browser=browser)
+        print(f"  {key}")
+    print(f"{len(glyphs)} glyphs -> assets/glyphs/")
+
+
+def from_library(key, sid, maskable):
+    """No browser: copy the shipped render for this glyph. Returns False if the
+    glyph is one the operator added themselves, which cannot be pre-rendered."""
+    if not os.path.exists(lib_png(key, 512)):
+        return False
+    for size in SIZES:
+        shutil.copy2(lib_png(key, size), sid_png(sid, size))
+    if maskable and os.path.exists(lib_png(key, "maskable-512")):
+        shutil.copy2(lib_png(key, "maskable-512"), sid_png(sid, "maskable-512"))
+    return True
+
+
 def main():
     glyphs = {k: v for k, v in load(GLYPHS).items() if not k.startswith("_")}
+    browser = chrome()
+
+    args = [a for a in sys.argv[1:] if a != "--library"]
+    if "--library" in sys.argv[1:]:
+        return build_library(glyphs, browser)
+
+    # `_example` entries are documentation shipped in services.json. Rendering
+    # them is harmless, but publishing one would mkdir a directory named in an
+    # example on someone else's machine — so they are skipped unless asked for
+    # by name.
     services = {s["id"]: s for s in load(REGISTRY).get("services", []) if s.get("id")}
-    wanted = sys.argv[1:] or list(services)
+    wanted = args or [k for k, s in services.items() if "_example" not in s]
 
     os.makedirs(OUT, exist_ok=True)
     if not services:
         sys.exit("make-icons: services.json has no services yet — register one "
                  "first, then run this.")
+    if not browser:
+        sys.stderr.write("make-icons: no Chromium — copying the shipped renders "
+                         "from assets/glyphs instead of rasterising. Custom "
+                         "glyphs and palette changes need a browser.\n")
 
     for sid in wanted:
         s = services.get(sid)
@@ -168,20 +230,31 @@ def main():
         key = s.get("icon", "server")
         if key not in glyphs:
             sys.stderr.write(f"  ! {sid}: no glyph '{key}', using server\n")
-        paths = glyphs.get(key, glyphs.get("server", ""))
+            key = "server"
+        paths = glyphs.get(key, "")
+        maskable = bool(s.get("maskable"))
 
-        render_glyph(paths, sid_png(sid, 512))
-        downscale(sid)
-        if s.get("maskable"):
-            render_glyph(paths, sid_png(sid, "maskable-512"), fill=MASK_FILL)
+        if browser:
+            render_glyph(paths, sid_png(sid, 512), browser=browser)
+            downscale(sid)
+            if maskable:
+                render_glyph(paths, sid_png(sid, "maskable-512"),
+                             fill=MASK_FILL, browser=browser)
+            how = "glyph"
+        elif from_library(key, sid, maskable):
+            how = "shipped"
+        else:
+            sys.stderr.write(f"  ! {sid}: glyph '{key}' is not in the shipped "
+                             f"library and there is no browser to draw it\n")
+            continue
 
         note = ""
         if s.get("icon_dest"):
-            publish(sid, s["icon_dest"], bool(s.get("maskable")))
+            publish(sid, s["icon_dest"], maskable)
             note = " -> " + s["icon_dest"]
         elif (s.get("skin") or {}).get("port"):
             note = " (skin_server serves it at /_skin/icon-*.png)"
-        print(f"{sid:12} glyph {key:12}{note}")
+        print(f"{sid:12} {how:8} {key:12}{note}")
 
 
 if __name__ == "__main__":

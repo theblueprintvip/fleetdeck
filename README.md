@@ -200,8 +200,16 @@ no fill. The renderer measures each path with `getBBox()` and scales it so its
 longest side fills the same fraction of every canvas, recomputing stroke-width
 per glyph — otherwise a flat glyph looks shrunken beside a round one.
 
-Needs a Chromium to rasterise SVG (`FLEETDECK_CHROME` if yours lives somewhere
-unusual) and macOS `sips` for the downscales. Nothing else.
+**Every glyph ships pre-rendered** in `assets/glyphs/`, so a fresh clone has
+the whole icon set on arrival. With no browser installed, `fleetdeck icons`
+copies those instead of rasterising — you still get real icons, they are
+byte-identical to a live render, and only a *custom* glyph or a palette change
+needs a browser after that.
+
+With one, it rasterises live: headless Chromium (`FLEETDECK_CHROME` if yours
+lives somewhere unusual) plus macOS `sips` for the downscales. Nothing else.
+Changed a glyph, or `BG`/`INK`/`STROKE`/`FILL`? Rebuild the shipped set with
+`./make-icons.py --library` and commit it.
 
 ## Skinning an app you don't own
 
@@ -315,6 +323,7 @@ this reason.
 config.json          identity, ports, agent filters      ← edit this
 services.json        the tile registry, hot-reloaded     ← and this
 glyphs.json          the line-glyph library              ← and this, to add icons
+assets/glyphs/       every glyph, pre-rendered           ← so a clone needs no browser
 portal_server.py     discovery + page + PWA + agent API
 chat_server.py       tmux thread list + ttyd proxy
 skin_server.py       dresses apps you cannot edit
