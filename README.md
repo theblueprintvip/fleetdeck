@@ -1,4 +1,4 @@
-# fleetdeck — `1.0.0`
+# fleetdeck — `1.1.0`
 
 **Your Mac's servers and launchd agents, as one launcher board on your phone.**
 Plus the tmux fleet as a chat. Tailnet-only, stdlib Python, no build step.
@@ -9,6 +9,7 @@ Two browser surfaces for one Mac, reachable from a phone over Tailscale:
 |---|---|---|
 | **portal** | 8790 | One tile per local **server** and per **launchd agent**. Installs to the home screen as a PWA. |
 | **chat** | 8783 | The whole **tmux fleet as a Messages-style thread list**. Tap a session, get a live writable terminal. |
+| **skin** | per app | Optional. Fronts an app you *cannot* edit — a container — so it installs with your icon and palette. Idle until you configure one. |
 
 Plus one internal: **:8784**, a loopback-only `ttyd` that is the chat's terminal
 backend. It is never reachable directly — `chat_server.py` proxies it under `/t`.
@@ -151,6 +152,97 @@ discover, so a caller cannot name an arbitrary launchd job even with actions on.
 
 ---
 
+## Home-screen icons
+
+The portal installs to an iPhone home screen with a real icon. Left alone,
+nothing else does — `apple-mobile-web-app-capable` buys standalone mode, not an
+icon, so Add to Home Screen falls back to a screenshot of the page and a row of
+your services comes out as a row of grey rectangles.
+
+`make-icons.py` fixes that. It rasterises the **same glyphs the board draws**,
+from `glyphs.json`, so a tile and its installed icon cannot drift apart:
+
+```bash
+fleetdeck icons            # every service with an icon
+fleetdeck icons chat pm    # just these
+```
+
+Output lands in `icons/` and is served at `/icons/<id>-<size>.png`. Set
+`icon_dest` on a service and the PNGs are copied into that app's own static
+directory too — better, because then the icon does not depend on the portal
+being up or the tailnet keeping its name:
+
+```json
+{ "id": "myapp", "port": 4000, "icon": "rocket",
+  "icon_dest": "~/my-app/public/icons", "install": true }
+```
+
+Then link it from that app's `<head>` and it installs cleanly:
+
+```html
+<link rel="apple-touch-icon" href="/icons/myapp-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My App">
+```
+
+`"install": true` lists it in the board's **Add to Home Screen** sheet — the
+button next to fullscreen. That sheet is a checklist, not an installer:
+`beforeinstallprompt` does not exist on iOS and Safari only offers Add to Home
+Screen from the Share menu, so it opens each surface in turn and remembers
+which ones you have done. Set the flag only once the app really serves that
+icon, or the sheet promises a tile that still comes out as a screenshot.
+
+Icons are PNG on purpose — iOS ignores SVG for `apple-touch-icon`. The board
+itself renders the glyph as inline SVG; both come from the one glyph.
+
+Adding a glyph is a line in `glyphs.json`: draw on a 24×24 grid, stroke only,
+no fill. The renderer measures each path with `getBBox()` and scales it so its
+longest side fills the same fraction of every canvas, recomputing stroke-width
+per glyph — otherwise a flat glyph looks shrunken beside a round one.
+
+Needs a Chromium to rasterise SVG (`FLEETDECK_CHROME` if yours lives somewhere
+unusual) and macOS `sips` for the downscales. Nothing else.
+
+## Skinning an app you don't own
+
+Half a real board is third-party apps in containers. They will never ship an
+icon that matches your fleet, and an image tagged `:latest` throws away
+anything you write into it on the next pull.
+
+So dress them from outside. Give a service a `skin` block:
+
+```json
+{ "id": "tts", "port": 8880, "install": true,
+  "skin": { "name": "Script", "port": 8871, "css": "script.css",
+            "replace": { "TheirBrand": "Script" },
+            "recolor": { "99, 102, 241": "79, 227, 193" } } }
+```
+
+`skin_server.py` binds `skin.port`, proxies the app **verbatim**, and rewrites
+only its `<head>`: title, apple-touch-icon, manifest, theme-color, and a
+stylesheet from `skins/` injected last so it wins specificity ties. Add a
+`tailscale serve` mapping for that port and the board resolves the tile to the
+front automatically — falling back to the bare app if the front is down, so a
+dead proxy degrades to a working link rather than a broken one.
+
+`replace` and `recolor` are literal substitutions, on HTML and CSS
+respectively. They exist because a stylesheet cannot reach a name an app paints
+into its own markup, nor a colour it hardcoded past its own variables. Prefer
+them to selector-specific rules: a colour map survives a redesign that moves
+every element, and a rule that assumes where a button sits does not. Start from
+`skins/example.css`.
+
+One side effect worth knowing: the front rewrites `Host` to `127.0.0.1`. Some
+dev servers — Vite among them — reject an unrecognised host and return 403 from
+behind `tailscale serve` even though the port is fine. Proxying through the
+skin fixes that without binding the app to `0.0.0.0` or patching a file you do
+not own.
+
+The agent idles harmlessly when nothing is skinned, and picks up a new `skin`
+block within a few seconds. No restart.
+
+---
+
 ## Security posture
 
 There is no password anywhere in the request path. What protects these surfaces:
@@ -222,12 +314,17 @@ this reason.
 ```
 config.json          identity, ports, agent filters      ← edit this
 services.json        the tile registry, hot-reloaded     ← and this
+glyphs.json          the line-glyph library              ← and this, to add icons
 portal_server.py     discovery + page + PWA + agent API
 chat_server.py       tmux thread list + ttyd proxy
+skin_server.py       dresses apps you cannot edit
+make-icons.py        glyphs.json → home-screen PNGs
+skins/*.css          per-app palette overrides
+icons/               generated PNGs (git-ignored)
 audit.py             proves each tile's claim separately
 bin/fleetdeck        CLI (rendered into ~/bin on install)
 launchagents/*.tmpl  plist templates
-assets/icon-*.png    home-screen icons                   ← replace with theirs
+assets/icon-*.png    the portal's own home-screen icon   ← replace with theirs
 ttyd-index.html      ttyd's index + the viewport meta it omits
 install.sh           reconcile machine with repo
 auth                 loopback ttyd credential (git-ignored, minted on install)
@@ -236,14 +333,15 @@ auth                 loopback ttyd credential (git-ignored, minted on install)
 ## CLI
 
 ```
-fleetdeck start [portal|chat]     bootstrap + set up the serve front
-fleetdeck stop  [portal|chat]
+fleetdeck start [portal|chat|skin] bootstrap + set up the serve front
+fleetdeck stop  [portal|chat|skin]
 fleetdeck restart
 fleetdeck status                  up/down, pids, urls
 fleetdeck doctor                  status + deps + serve map + drift + agent health
 fleetdeck url                     the two links (portal is https, chat is http)
 fleetdeck log [n]
 fleetdeck edit                    $EDITOR services.json
+fleetdeck icons [id...]           rasterise glyphs into home-screen PNGs
 fleetdeck audit                   verify every tile's claim
 ```
 

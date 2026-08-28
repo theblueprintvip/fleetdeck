@@ -1,4 +1,11 @@
+# The credential minted by install.sh. Never commit — it is a shell on this machine.
 auth
+
+# Rasterised home-screen icons. Regenerate with `fleetdeck icons`; they are
+# derived from glyphs.json, so carrying them in git would version the same
+# marks twice and go stale the moment a glyph changes.
+icons/
+
 __pycache__/
 *.pyc
 .DS_Store

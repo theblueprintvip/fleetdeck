@@ -139,6 +139,17 @@ if [ -x "$TSBIN" ]; then
   fi
 fi
 
+# Home-screen icons, if anything in the registry wants one. Non-fatal: this
+# needs a Chromium to rasterise SVG, and a machine without one should still end
+# up with a working board — it just has no PNGs until Chrome is installed and
+# `fleetdeck icons` is run.
+if "$PY" "$HERE/make-icons.py" >/dev/null 2>&1; then
+  echo "  + home-screen icons (fleetdeck icons to regenerate)"
+else
+  echo "  ~ home-screen icons skipped — run 'fleetdeck icons' once a Chromium"
+  echo "    is available, or set FLEETDECK_CHROME. The board is unaffected."
+fi
+
 sleep 5
 echo
 exec "$BIN/fleetdeck" doctor

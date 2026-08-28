@@ -3,7 +3,11 @@
 
   "_curation": "This ships nearly empty ON PURPOSE. Everything listening that is NOT registered here appears under 'unregistered' at the bottom of the board with its process name and port. Run the portal, look at that list, and promote the ones that matter into 'services' with a real name, blurb and icon. That beats shipping a wall of offline tiles for apps this machine does not run.",
 
-  "_icons": "terminal chat messages gauge board grid brain sparkle gallery chip compass book scroll flask cpu waveform rocket glasses film orb play speaker vr layers mail search database archive server clock bolt loop eye hand",
+  "_icons": "Glyph keys come from glyphs.json. Bundled: terminal chat fleet messages gauge board grid brain sparkle gallery chip compass reticle book scroll script flask cpu waveform pulse nodes hex rocket glasses film orb play speaker vr layers mail search database archive server clock bolt loop eye hand. Add your own by drawing on a 24x24 grid, stroke only, no fill.",
+
+  "_home_screen": "Optional per-service keys that make an app installable to an iPhone home screen. Run ./make-icons.py after setting them. 'icon_dest' = a directory that app serves statically; the PNGs are copied there so it serves its own icon from its own origin and stops depending on the portal being up. 'install': true = list it in the portal's Add to Home Screen sheet — set that only once the app actually serves an apple-touch-icon, or the sheet promises a tile that comes out as a screenshot of the page. 'maskable': true = also emit a 55%-fill variant, because Android crops a maskable icon to a circle and would clip a square-ish glyph's corners.",
+
+  "_skin": "Optional. For an app you cannot edit — a container, or anything whose HTML is not yours. skin_server.py binds skin.port, proxies the app verbatim, and rewrites only its <head>: title, apple-touch-icon, manifest, theme-color, plus a stylesheet from skins/ injected last so it wins specificity ties. Give skin.port a `tailscale serve` mapping and the portal resolves the tile to it automatically, falling back to the bare app if the front is down. Keys: name, port, css, icon_set, replace (literal swaps in HTML, for names an app paints into its own markup where no stylesheet can reach), recolor (literal swaps in CSS, for colours it hardcoded past its own variables). It also rewrites the Host header to 127.0.0.1, which fixes dev servers like Vite that 403 an unrecognised host from behind tailscale serve.",
 
   "groups": [
     { "id": "fleet",  "label": "fleet"  },
@@ -20,6 +24,36 @@
       "icon": "chat",
       "name": "Chat",
       "blurb": "tmux fleet as a thread list"
+    },
+
+    {
+      "_example": "DELETE THIS. The shape of a fully dressed entry for an app you own — it serves its own icon out of its own static directory. Set install:true once its <head> links that icon.",
+      "id": "example-owned",
+      "group": "apps",
+      "port": 4000,
+      "icon": "rocket",
+      "name": "My App",
+      "blurb": "something this machine runs",
+      "icon_dest": "~/my-app/public/icons",
+      "install": false
+    },
+
+    {
+      "_example": "DELETE THIS. The shape for an app you cannot edit — a container — dressed from outside by skin_server.py on a port of its own.",
+      "id": "example-skinned",
+      "group": "apps",
+      "port": 8880,
+      "icon": "speaker",
+      "name": "Their App",
+      "blurb": "a container, renamed and recoloured from outside",
+      "install": false,
+      "skin": {
+        "name": "My Name For It",
+        "port": 8871,
+        "css": "example.css",
+        "replace": { "TheirBrand": "My Name For It" },
+        "recolor": { "99, 102, 241": "79, 227, 193" }
+      }
     }
   ]
 }

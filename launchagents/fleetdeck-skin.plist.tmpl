@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>__PREFIX__.fleetdeck-skin</string>
+	<!-- Fronts any service carrying a "skin" block in services.json, rewriting
+	     its <head> on the way past so a third-party app installs to the home
+	     screen with your icon. Harmless with no skins configured: it idles and
+	     re-reads the registry, binding new fronts within a few seconds of the
+	     edit. One process serves every skinned app, one listener each. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>__ROOT__/skin_server.py</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>__HOME__/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<!-- Loopback, like the portal. Put each skin port behind
+		     `tailscale serve --bg --https=PORT http://127.0.0.1:PORT` so the
+		     phone gets HTTPS and a secure origin, which Add to Home Screen
+		     wants. A skinned app is often one whose keys you do not want
+		     brokered to anything wider than the tailnet. -->
+		<key>FLEETDECK_SKIN_BIND</key>
+		<string>127.0.0.1</string>
+	</dict>
+	<key>WorkingDirectory</key>
+	<string>__ROOT__</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>15</integer>
+	<key>StandardOutPath</key>
+	<string>/tmp/fleetdeck-skin.log</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/fleetdeck-skin.log</string>
+</dict>
+</plist>

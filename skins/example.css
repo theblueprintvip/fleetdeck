@@ -1,0 +1,49 @@
+/* example.css — a skin, injected last by skin_server.py.
+ *
+ * Referenced from a service's `skin.css` in services.json. It loads after
+ * every stylesheet the app ships, so it wins any specificity tie without
+ * needing !important.
+ *
+ * The advice that matters: make it a RECOLOUR, not a restyle.
+ *
+ * You are styling an app you do not control, usually one tagged :latest, and
+ * it will move without warning. A rule that assumes where a button sits breaks
+ * on their next release. A colour survives a redesign that moves every element
+ * on the page. So change colour, and leave layout, spacing and typography to
+ * them — you get something that reads as yours and keeps working.
+ *
+ * Most apps route their colours through a handful of :root custom properties.
+ * Open their stylesheet, find those, override them here, and you are ~90% done
+ * in ten lines. For the literals they hardcoded past their own variables, use
+ * the `recolor` map in services.json instead of writing a rule per selector —
+ * that map is a plain string substitution on their CSS as it goes past, so it
+ * does not care what the selectors are called.
+ *
+ * Palette below is fleetdeck's own, so a skinned app matches the board:
+ *   --bg  #05070a   --panel #0a0e13   --line #18222b
+ *   --ink #8fa3b0   --bright #d6e4ec  --on   #4fe3c1
+ */
+
+:root {
+  /* Rename these to whatever the app actually calls them. */
+  --bg-color: #05070a;
+  --surface: #0a0e13;
+  --border: #18222b;
+  --text: #d6e4ec;
+  --text-light: #8fa3b0;
+  --fg-color: #4fe3c1;
+}
+
+/* Checkboxes, radios and range thumbs usually have no colour in an app's CSS
+ * at all — that blue is the browser's own default, and only accent-color
+ * reaches it. */
+:root {
+  accent-color: #4fe3c1;
+}
+
+/* If a full-strength accent was tuned for a muted colour and blows out under a
+ * brighter one, dim the element rather than reaching for a different hue —
+ * still a colour decision, still no layout touched.
+ *
+ * .overlay { opacity: 0.22; }
+ */

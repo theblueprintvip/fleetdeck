@@ -65,8 +65,16 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 HERE = os.path.dirname(os.path.abspath(__file__))
 CFG_FILE = os.path.join(HERE, "config.json")
 REGISTRY = os.path.join(HERE, "services.json")
+GLYPHS = os.path.join(HERE, "glyphs.json")
+ICONS = os.path.join(HERE, "icons")     # per-service PNGs from make-icons.py
 AGENT_DIR = os.path.expanduser("~/Library/LaunchAgents")
 TSBIN = "/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+# The one built-in glyph. Everything else lives in glyphs.json, which
+# make-icons.py reads too — the board and the home-screen icons are drawn from
+# the same paths, so they cannot drift. If that file is unreadable the board
+# still renders, every tile just wearing this.
+FALLBACK_GLYPH = '<path d="M3 4h18v6H3zM3 14h18v6H3z"/><path d="M7 7h.01M7 17h.01"/>'
 
 DEFAULTS = {
     "brand": "fleetdeck",
@@ -391,6 +399,18 @@ def load_registry():
         return {"groups": [], "services": [], "error": str(e)}
 
 
+def glyph_map():
+    """Read glyphs.json fresh, like the registry — editing a glyph is a reload,
+    not a restart. Keys starting with '_' are comments, not icons."""
+    try:
+        with open(GLYPHS) as fh:
+            return {k: v for k, v in json.load(fh).items() if not k.startswith("_")}
+    except Exception as exc:
+        sys.stderr.write(f"fleetdeck: glyphs.json unreadable ({exc})\n")
+        sys.stderr.flush()
+        return {"server": FALLBACK_GLYPH}
+
+
 def scan():
     live, served, reg = listeners(), serve_map(), load_registry()
     known = set()
@@ -400,12 +420,23 @@ def scan():
         port = s.get("port")
         known.add(port)
         hit = live.get(port)
+        # A skinned service answers on two ports: its own, and the skin_server
+        # front that dresses it. The tile should open the dressed one — but only
+        # if it is actually up, so a dead front degrades to the bare app rather
+        # than to a dead link. Both ports count as known, or the front would
+        # show up under "unregistered".
+        face = port
+        skin_port = (s.get("skin") or {}).get("port")
+        if skin_port:
+            known.add(skin_port)
+            if live.get(skin_port):
+                face = skin_port
         url = None
         if hit:
-            if port in served:
-                url = served[port]
-            elif hit["cls"] in ("open", "tailnet"):
-                url = f"http://{HOST}:{port}"
+            if face in served:
+                url = served[face]
+            elif live[face]["cls"] in ("open", "tailnet"):
+                url = f"http://{HOST}:{face}"
             if url and s.get("path"):
                 url += s["path"]
         # An "api" service has no browser UI: tapping its root lands on a 404 or
@@ -429,6 +460,10 @@ def scan():
             "reach": ("link" if url else ("host" if hit else "down")),
             "url": url,
             "linkable": linkable,
+            # Registry-declared: this surface serves a real apple-touch-icon.
+            # The install sheet lists only these, so it never promises a tile
+            # that would come out as a screenshot of the page instead.
+            "install": bool(s.get("install")),
         })
 
     # Anything listening that the registry does not know about. Kept separate and
@@ -555,6 +590,65 @@ PAGE = """<!doctype html>
      (it is already fullscreen). */
   body.standalone header{padding-top:calc(20px + env(safe-area-inset-top))}
   body.standalone #fs{display:none !important}
+  /* Add to Home Screen cannot be triggered from script on iOS — Safari only
+     offers it from the Share menu, and beforeinstallprompt does not exist
+     there. So this is a checklist, not a button that installs: it opens each
+     surface in turn and remembers which ones are done, because working through
+     a dozen of them from memory is how you end up with four. */
+  #ins{
+    margin-left:8px;flex:none;width:30px;height:30px;padding:0;
+    background:transparent;border:1px solid var(--line);border-radius:3px;
+    color:var(--ink);cursor:pointer;line-height:0;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  #ins:active,#ins:hover{border-color:var(--on);color:var(--on)}
+  #sheet{
+    position:fixed;inset:0;z-index:20;display:none;overflow:auto;
+    background:rgba(5,7,10,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    padding:24px 16px calc(32px + env(safe-area-inset-bottom));
+  }
+  #sheet.on{display:block}
+  #sheet .card{
+    max-width:520px;margin:0 auto;background:var(--panel);
+    border:1px solid var(--line);border-radius:4px;padding:16px 16px 8px;
+  }
+  #sheet h3{
+    margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--bright);
+  }
+  #sheet .lead{color:var(--dim);font-size:11px;line-height:1.7;margin:0 0 14px}
+  #sheet .lead b{color:var(--ink);font-weight:600}
+  .irow{
+    display:flex;align-items:center;gap:11px;padding:9px 4px;
+    border-top:1px solid var(--line);color:var(--ink);
+  }
+  /* the tick is a sibling of the link, not inside it — a button nested in an
+     anchor is invalid, and every tap would have navigated */
+  .irow .go{
+    display:flex;align-items:center;gap:11px;flex:1;min-width:0;
+    color:inherit;text-decoration:none;
+  }
+  .irow .ico{width:19px;height:19px;flex:none;color:var(--on)}
+  .irow .nm{flex:1;min-width:0;font-size:12.5px;color:var(--bright)}
+  .irow .nm span{display:block;color:var(--dim);font-size:10.5px;letter-spacing:.06em}
+  .irow.off{opacity:.4}
+  .irow.off .ico{color:var(--off)}
+  .tick{
+    flex:none;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;
+    background:transparent;color:var(--off);cursor:pointer;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;line-height:0;
+  }
+  .tick.done{border-color:var(--on);color:var(--on)}
+  #sheet .foot{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    border-top:1px solid var(--line);margin-top:6px;padding:11px 4px 8px;
+    color:var(--dim);font-size:10.5px;letter-spacing:.06em;
+  }
+  #sheet .foot button{
+    background:none;border:0;color:var(--on);font:inherit;
+    text-decoration:underline;cursor:pointer;padding:0;
+  }
+  #sheet .empty{color:var(--dim);font-size:11px;line-height:1.7;padding:10px 4px 16px}
   #hint{
     display:none;margin:0 0 18px;padding:10px 12px;
     border:1px solid var(--line);border-left:2px solid var(--on);border-radius:3px;
@@ -641,9 +735,25 @@ PAGE = """<!doctype html>
       <path id="fsi" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
     </svg>
   </button>
+  <button id="ins" title="Add to Home Screen" aria-label="Add apps to Home Screen">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 8v7M8.5 11.5h7"/>
+    </svg>
+  </button>
 </header>
 <div id="hint"></div>
 <main id="app"></main>
+<div id="sheet"><div class="card">
+  <h3>add to home screen</h3>
+  <p class="lead">iOS only offers this from the Share menu, so nothing here can
+    install for you. Open one, tap <b>Share &rarr; Add to Home Screen</b>, come
+    back and tick it off.</p>
+  <div id="ilist"></div>
+  <div class="foot"><span id="idone">—</span>
+    <span><button id="ireset">reset</button> · <button id="iclose">close</button></span>
+  </div>
+</div></div>
 <footer>
   every link resolved live from <span style="color:var(--ink)">lsof</span> binds +
   <span style="color:var(--ink)">tailscale serve</span>; every agent from
@@ -657,41 +767,7 @@ PAGE = """<!doctype html>
   registry: <span id="regpath">services.json</span> · scan <span id="ago">—</span>
 </footer>
 <script>
-const I={
- terminal:'<path d="M4 5h16v14H4z"/><path d="m8 10 2.5 2L8 14"/><path d="M13 15h3"/>',
- chat:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
- messages:'<path d="M20 4H4v12h4v4l5-4h7z"/><path d="M8 10h8"/>',
- gauge:'<path d="M3 17a9 9 0 1 1 18 0"/><path d="m12 17 4.5-6"/><circle cx="12" cy="17" r="1.4"/>',
- board:'<path d="M3 4h18v16H3z"/><path d="M9 4v16M15 4v16"/><path d="M5.5 7.5h2M11.5 7.5h2M17.5 7.5h2"/>',
- grid:'<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
- brain:'<path d="M12 6a3.2 3.2 0 0 0-6-1.2A2.9 2.9 0 0 0 4 7.6a3 3 0 0 0 .9 2.1A3 3 0 0 0 4 12a3 3 0 0 0 2 2.8A3 3 0 0 0 9 19a3 3 0 0 0 3-3z"/><path d="M12 6a3.2 3.2 0 0 1 6-1.2 2.9 2.9 0 0 1 2 2.8 3 3 0 0 1-.9 2.1A3 3 0 0 1 20 12a3 3 0 0 1-2 2.8A3 3 0 0 1 15 19a3 3 0 0 1-3-3z"/>',
- sparkle:'<path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="m18.4 15.6.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/>',
- gallery:'<path d="M7 5h10v14H7z"/><path d="M4 8v8M20 8v8"/><path d="m9.5 15 2-2.5 2 2 1-1.2 2 3.7h-7z"/>',
- chip:'<path d="M7 7h10v10H7z"/><path d="M10 2v3M14 2v3M10 19v3M14 19v3M2 10h3M2 14h3M19 10h3M19 14h3"/>',
- compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5.5-5.5 2 2-5.5z"/>',
- book:'<path d="M12 6.5C10.5 5 8.3 4.5 5 4.7V18c3.3-.2 5.5.3 7 1.8 1.5-1.5 3.7-2 7-1.8V4.7c-3.3-.2-5.5.3-7 1.8z"/><path d="M12 6.5v13"/>',
- scroll:'<path d="M7 4h10v14a2 2 0 0 0 2 2H8a2 2 0 0 1-2-2V6"/><path d="M10 8h5M10 12h5"/>',
- flask:'<path d="M9 3v6L4 19a1.6 1.6 0 0 0 1.4 2h13.2A1.6 1.6 0 0 0 20 19l-5-10V3"/><path d="M8 3h8M7.5 14h9"/>',
- cpu:'<path d="M6 6h12v12H6z"/><path d="M10 10h4v4h-4z"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
- waveform:'<path d="M3 12h3l3-8 4 16 3-8h5"/>',
- rocket:'<path d="M12 3c3.5 2.5 5 6 5 10l-2.5 3h-5L7 13c0-4 1.5-7.5 5-10z"/><circle cx="12" cy="10" r="1.6"/><path d="M9.5 17 8 21l3-1.5M14.5 17l1.5 4-3-1.5"/>',
- glasses:'<circle cx="6.5" cy="14" r="3.5"/><circle cx="17.5" cy="14" r="3.5"/><path d="M10 14a2.5 2.5 0 0 1 4 0M3 11l2-4M21 11l-2-4"/>',
- film:'<path d="M3 5h18v14H3z"/><path d="M7 5v14M17 5v14"/><path d="M5 8h.01M5 12h.01M5 16h.01M19 8h.01M19 12h.01M19 16h.01"/>',
- orb:'<circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="8" ry="3.4"/><path d="M12 4v16"/>',
- play:'<circle cx="12" cy="12" r="9"/><path d="m10 8.2 6.2 3.8-6.2 3.8z"/>',
- speaker:'<path d="M4 9.5h3.5L12 6v12L7.5 14.5H4z"/><path d="M16 9.8a3.4 3.4 0 0 1 0 4.4M18.6 7.4a7 7 0 0 1 0 9.2"/>',
- vr:'<path d="M3 8h18v6.5a1.5 1.5 0 0 1-1.5 1.5H16l-2-2h-4l-2 2H4.5A1.5 1.5 0 0 1 3 14.5z"/><path d="M7.5 5.5h9"/>',
- layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
- mail:'<path d="M3 6h18v12H3z"/><path d="m3 7 9 6 9-6"/>',
- search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/>',
- database:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
- archive:'<path d="M3 4h18v4H3z"/><path d="M5 8v12h14V8"/><path d="M10 12h4"/>',
- server:'<path d="M3 4h18v6H3zM3 14h18v6H3z"/><path d="M7 7h.01M7 17h.01"/>',
- clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/>',
- bolt:'<path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z"/>',
- loop:'<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8"/><path d="M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 16"/><path d="M4 20v-4h4"/>',
- eye:'<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/>',
- hand:'<path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V11m0 0V4.5a1.5 1.5 0 0 1 3 0V11m0 0V6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a5 5 0 0 1-4.3-2.5L5 15"/>'};
+const I=__GLYPHS__;
 
 const svg=k=>`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
   stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${I[k]||I.server}</svg>`;
@@ -699,9 +775,9 @@ const svg=k=>`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentCo
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-let last=0;
+let last=0, DATA=null;
 function render(d){
-  last=d.scanned*1000;
+  last=d.scanned*1000; DATA=d;
   const up=d.services.filter(s=>s.up).length;
   document.getElementById('n').textContent=up+'/'+d.services.length;
   let h=d.error?`<div class="err">registry: ${d.error}</div>`:'';
@@ -791,6 +867,63 @@ function tick(){
 async function poll(){
   try{ render(await (await fetch('api/status',{cache:'no-store'})).json()); }catch(e){}
 }
+// ── add to home screen ───────────────────────────────────────────────────────
+// A checklist, not an installer. `beforeinstallprompt` does not exist on iOS
+// and this board is built for a phone, so the honest thing is to hand over the
+// list and remember your place in it. Which surfaces appear is registry-declared
+// ("install": true) — the sheet never offers a tile that would still come out as
+// a screenshot of its own page, the same rule the board follows for links it
+// has not resolved.
+const sheet = document.getElementById('sheet');
+const ticked = () => { try { return JSON.parse(localStorage.getItem('fd-installed') || '[]'); }
+                       catch (e) { return []; } };
+const setTicked = a => localStorage.setItem('fd-installed', JSON.stringify(a));
+
+function drawSheet(){
+  if(!DATA) return;
+  const done=ticked(), rows=(DATA.services||[]).filter(s=>s.install);
+  const list=document.getElementById('ilist');
+  if(!rows.length){
+    list.innerHTML='<div class="empty">No service is marked installable yet. '
+      +'Add <b>"install": true</b> to an entry in services.json once it serves '
+      +'an apple-touch-icon — see the README.</div>';
+    document.getElementById('idone').textContent='0 of 0';
+    return;
+  }
+  let h='';
+  for(const s of rows){
+    // reachability comes off the same live scan the tiles use — a surface that
+    // is down or loopback-bound is shown greyed with the reason, not offered
+    const open=s.url&&s.linkable;
+    const why=s.reach==='host'?'host only':(s.reach==='down'?'offline':':'+s.port);
+    const inner=`${svg(s.icon)}<span class="nm">${esc(s.name)}<span>${why}</span></span>`;
+    h+=`<div class="irow${open?'':' off'}">`
+      +(open?`<a class="go" href="${esc(s.url)}" target="_blank" rel="noopener">${inner}</a>`
+            :`<span class="go">${inner}</span>`)
+      +`<button class="tick${done.includes(s.id)?' done':''}" data-id="${esc(s.id)}"`
+      +` aria-label="Mark ${esc(s.name)} added">`
+      +`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"`
+      +` stroke-width="3" stroke-linecap="round" stroke-linejoin="round">`
+      +`<path d="m5 13 5 5L20 7"/></svg></button></div>`;
+  }
+  list.innerHTML=h;
+  const n=done.filter(id=>rows.some(s=>s.id===id)).length;
+  document.getElementById('idone').textContent=n+' of '+rows.length+' added';
+}
+
+document.getElementById('ilist').addEventListener('click',e=>{
+  const b=e.target.closest('.tick'); if(!b) return;
+  const a=ticked(), i=a.indexOf(b.dataset.id);
+  if(i<0) a.push(b.dataset.id); else a.splice(i,1);
+  setTicked(a); drawSheet();
+});
+const closeSheet=()=>sheet.classList.remove('on');
+document.getElementById('ins').addEventListener('click',()=>{drawSheet();sheet.classList.add('on')});
+document.getElementById('iclose').addEventListener('click',closeSheet);
+document.getElementById('ireset').addEventListener('click',()=>{setTicked([]);drawSheet()});
+sheet.addEventListener('click',e=>{if(e.target===sheet)closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
 // ── fullscreen ───────────────────────────────────────────────────────────────
 // Three different platforms, three different answers, so feature-detect rather
 // than assume:
@@ -877,7 +1010,7 @@ tailnet. The portal only answers over Tailscale.</p>
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "wb-portal"
+    server_version = "fleetdeck"
     protocol_version = "HTTP/1.1"
     timeout = 30  # don't let an abandoned keep-alive socket hold a thread forever
 
@@ -961,14 +1094,30 @@ class Handler(BaseHTTPRequestHandler):
                     return self._send(200, fh.read(), "image/png")
             return self._send(404, "no icon\n", "text/plain")
 
+        # One PNG per service, written by make-icons.py off the same glyph
+        # library the board draws. Apps that can serve their own static files
+        # should be given a copy (see `icon_dest` in services.json) so their
+        # icon does not depend on this process; this route is the master, for
+        # eyeballing the output and for surfaces that cannot host a file of
+        # their own. basename() is the traversal guard — nothing outside
+        # icons/ is reachable.
+        if path.startswith("/icons/") and path.endswith(".png"):
+            icon = os.path.join(ICONS, os.path.basename(path))
+            if os.path.exists(icon):
+                with open(icon, "rb") as fh:
+                    return self._send(200, fh.read(), "image/png")
+            return self._send(404, "no icon\n", "text/plain")
+
         if path in ("/api/status", "/api"):
             return self._send(200, json.dumps(cached_scan()), "application/json")
 
         if path == "/":
             data = json.dumps(cached_scan()).replace("</", "<\\/")
+            glyphs = json.dumps(glyph_map(), separators=(",", ":")).replace("</", "<\\/")
             page = (PAGE
                     .replace("__BRAND__", esc_html(BRAND))
                     .replace("__MACHINE__", esc_html(MACHINE))
+                    .replace("__GLYPHS__", glyphs)
                     .replace("window.__DATA__", f"JSON.parse({json.dumps(data)})"))
             return self._send(200, page, "text/html; charset=utf-8")
 
