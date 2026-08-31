@@ -22,6 +22,18 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Optional: name the surfaces to install. `./install.sh` does all of them, which
+# is what a fresh machine wants. `./install.sh portal` does one, which is what a
+# machine already running something on the other ports needs — installing a
+# second agent onto a bound port gets you a crash-loop and a surface the
+# operator was using a moment ago.
+WANT=("$@")
+wanted() {
+  [ ${#WANT[@]} -eq 0 ] && return 0
+  for w in "${WANT[@]}"; do [ "fleetdeck-$w" = "$1" ] && return 0; done
+  return 1
+}
 BIN="$HOME/bin"
 LA="$HOME/Library/LaunchAgents"
 UID_N="$(id -u)"
@@ -48,7 +60,16 @@ done
   || echo "  ~ Tailscale.app not found — the portal will stay loopback-only until it is installed"
 [ "$miss" = 0 ] || { echo; echo "install the missing tools, then re-run."; exit 1; }
 
-[ -f "$HERE/config.json" ] || { echo "  ✗ no config.json"; exit 1; }
+# config.json and services.json are operator data and deliberately untracked —
+# see .gitignore. Seed them from the shipped templates on a fresh clone, and
+# never touch them again: re-running install.sh must not overwrite a board the
+# operator has curated.
+for f in config services; do
+  if [ ! -f "$HERE/$f.json" ]; then
+    cp "$HERE/$f.example.json" "$HERE/$f.json" && echo "  + $f.json (from $f.example.json)"
+  fi
+done
+[ -f "$HERE/config.json" ] || { echo "  ✗ no config.json and no template to seed it"; exit 1; }
 
 read -r PREFIX PORTAL_PORT CHAT_PORT TTYD_PORT ADOPT_PORT <<<"$("$PY" - "$HERE/config.json" <<'EOF'
 import json,sys
@@ -78,6 +99,7 @@ rm -f "$tmp"
 # ── the plists ───────────────────────────────────────────────────────────────
 for t in "$HERE"/launchagents/*.plist.tmpl; do
   base="$(basename "$t" .plist.tmpl)"
+  wanted "$base" || continue
   label="$PREFIX.$base"
   out="$LA/$label.plist"
   tmp="$(mktemp)"
@@ -110,7 +132,9 @@ fi
 echo
 echo "loading agents…"
 for t in "$HERE"/launchagents/*.plist.tmpl; do
-  l="$PREFIX.$(basename "$t" .plist.tmpl)"
+  base="$(basename "$t" .plist.tmpl)"
+  wanted "$base" || continue
+  l="$PREFIX.$base"
   if launchctl print "gui/$UID_N/$l" >/dev/null 2>&1; then
     launchctl bootout "gui/$UID_N/$l" 2>/dev/null
     # bootout is ASYNCHRONOUS. Bootstrapping before the old job has finished

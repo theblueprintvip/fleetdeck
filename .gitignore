@@ -9,3 +9,11 @@ icons/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Operator data, not product. config.json carries this machine's brand, launchd
+# prefix and ports; services.json is a map of everything it runs and on which
+# port. This repo is public — publishing either would hand a stranger the
+# layout of somebody's machine. install.sh seeds both from the .example files
+# on first run, and never overwrites them afterwards.
+config.json
+services.json

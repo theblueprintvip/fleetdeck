@@ -1,0 +1,57 @@
+/* script.css — Kokoro in the brainwave palette.
+ *
+ * Injected last by wb-skin, so it lands after every stylesheet the app ships
+ * and wins any specificity tie without needing !important.
+ *
+ * Deliberately a recolour and nothing else. No layout, no spacing, no
+ * typography — their Inter stack and their grid stay exactly as they are.
+ * The reason is upstream: this is `ghcr.io/remsky/kokoro-fastapi-cpu:latest`
+ * and it moves without warning. Colour survives a redesign; a rule that
+ * assumes where a button sits does not.
+ *
+ * Almost all of it is seven variables, because the app is disciplined about
+ * using them — 88 of its ~100 colour references go through var(). The three
+ * blocks after :root are the exceptions, each one a literal the app hardcoded
+ * past its own variables.
+ *
+ * Mapping is straight off the portal stylesheet, so a tile and the app behind
+ * it are the same machine:
+ *   --bg  #05070a   --panel #0a0e13   --line #18222b
+ *   --ink #8fa3b0   --bright #d6e4ec  --on   #4fe3c1
+ */
+
+:root {
+  --bg-color: #05070a;
+  --fg-color: #4fe3c1;
+  --surface: #0a0e13;
+  --text: #d6e4ec;
+  --text-light: #8fa3b0;
+  --border: #18222b;
+  --error: #e0594b;
+  --success: #4fe3c1;
+}
+
+/* Their overlay is a full-strength radial of --fg-color into --bg-color. That
+ * reads as a tasteful indigo wash at #6366f1 and as a flood at mint, which is
+ * a much brighter colour — same rule, different result. Dimming it is still a
+ * colour decision; the element, its position and its size are untouched. */
+.overlay {
+  opacity: 0.22;
+}
+
+/* Hardcoded past --fg-color, so half this ring stayed indigo. */
+.download-glow {
+  background: conic-gradient(from 0deg, var(--fg-color), #2b8f7c, var(--fg-color));
+}
+
+/* Checkboxes and range thumbs have no colour in their CSS at all — that blue
+ * is the browser's own default, and only accent-color reaches it. */
+:root {
+  accent-color: #4fe3c1;
+}
+
+/* Hardcoded muted red on near-black; the rest of the app is variable-driven. */
+.player-btn.cancel {
+  background: #4a2320;
+  color: #e8b4ad;
+}

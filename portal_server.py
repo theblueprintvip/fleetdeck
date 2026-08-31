@@ -341,12 +341,22 @@ def launch_agents():
         if not fn.endswith(".plist"):
             continue
         label = fn[:-6]
+        # An unreadable plist used to fall through as an empty dict, which
+        # rendered a tile with no program, no schedule and "no log" — the exact
+        # shape of a badly configured job, for a file that is simply not
+        # parseable. Say which it is. This is not hypothetical: XML forbids `--`
+        # inside a comment, `plutil -lint` accepts it anyway, and two agents on
+        # this machine were silently blank because of a hyphen in a comment.
+        unreadable = None
         try:
             with open(os.path.join(AGENT_DIR, fn), "rb") as fh:
                 p = plistlib.load(fh)
             label = p.get("Label", label)
-        except Exception:
+        except Exception as err:
+            # NB: not `as exc` — that name is the exclude list a few lines down,
+            # and Python unbinds an `except ... as` target when the block ends.
             p = {}
+            unreadable = str(err)
         low = label.lower()
         if AGENT_NOISE.search(label) and not any(s in low for s in inc):
             continue
@@ -373,6 +383,30 @@ def launch_agents():
         else:
             health = "fail"
 
+        # launchd keeps no last-run time. Not in `launchctl list`, not in
+        # `launchctl print` — there is a cumulative `runs` count and a last exit
+        # code, and no clock anywhere. So the honest proxy is when the job last
+        # WROTE something: stat the log it declares.
+        #
+        # This is last OUTPUT, not last run, and the UI says so. A job that runs
+        # silently leaves it blank, and conflating the two is exactly how a
+        # quiet healthy job comes to look dead.
+        #
+        # StandardOutPath is already in the plist being parsed here, so this
+        # costs one stat and no subprocess. `launchctl print` per agent would be
+        # 79 subprocesses on the render path.
+        last_output, logged = None, False
+        for key in ("StandardOutPath", "StandardErrorPath"):
+            path = p.get(key)
+            if not isinstance(path, str) or not path:
+                continue
+            logged = True
+            try:
+                mtime = os.stat(os.path.expanduser(path)).st_mtime
+            except OSError:
+                continue  # declared but absent — the job has written nothing
+            last_output = mtime if last_output is None else max(last_output, mtime)
+
         name = label
         if prefix and name.startswith(prefix + "."):
             name = name[len(prefix) + 1:]
@@ -380,11 +414,18 @@ def launch_agents():
             "kind": "agent",
             "label": label,
             "name": name,
-            "program": program_of(p),
+            "program": ("plist will not parse" if unreadable else program_of(p)),
             "schedule": schedule_of(p),
+            "unreadable": unreadable,
             "health": health,
             "pid": st.get("pid") if st else None,
             "exit": code,
+            # None is a real answer: no log path configured, or nothing written
+            # yet. The board is rescanned rather than remembered, so an invented
+            # timestamp costs more than a blank one. `logged` separates the two
+            # absences so the tile can say which it is.
+            "last_output": last_output,
+            "logged": logged,
         })
     out.sort(key=lambda a: ({"fail": 0, "off": 1, "run": 2, "ok": 3}[a["health"]],
                             a["name"]))
@@ -701,6 +742,10 @@ PAGE = """<!doctype html>
      earns amber. Anything louder and the board stops being readable. */
   .tile.agent{min-height:92px}
   .tile.agent .ico{color:var(--dim)}
+  .tile.agent .when{margin-top:2px;font-size:10px;letter-spacing:.06em;color:var(--dim)}
+  /* An absent timestamp is stated, not hidden — but quietly, because on a
+     board where most jobs are silent it is the common case, not a fault. */
+  .tile.agent .when.none{opacity:.45}
   .tile.agent.run .lamp{background:var(--on);box-shadow:0 0 0 3px rgba(79,227,193,.14)}
   .tile.agent.run .ico{color:var(--on)}
   .tile.agent.ok .lamp{background:var(--idle)}
@@ -823,6 +868,13 @@ function render(d){
                 : a.health==='off'  ? '<span class="badge">unloaded</span>'
                 : a.health==='run'  ? `<span style="letter-spacing:.08em">pid ${a.pid}</span>`
                 : '';
+      // launchd has no last-run time, so this is when the job last WROTE to
+      // its log — a different claim, and labelled as one. Absent is rendered,
+      // never filled in: "no log" means the plist declares no output path,
+      // "no output" means it declares one and nothing has been written to it.
+      const when = a.last_output ? `out ${rel(a.last_output)}`
+                 : a.logged      ? 'no output'
+                 : 'no log';
       const acts = d.agentActions ? `<div class="acts">
           <button data-act="start" data-label="${esc(a.label)}">run</button>
           <button data-act="stop"  data-label="${esc(a.label)}">stop</button>
@@ -832,6 +884,7 @@ function render(d){
         <div><div class="name">${esc(a.name)}</div>
              <div class="blurb">${esc(a.program)}</div></div>
         <div class="foot"><span class="sched">${esc(s)}</span>${tag}</div>
+        <div class="foot when${a.last_output?'':' none'}">${esc(when)}</div>
         ${acts}</div>`;
     }
     h+='</div>';
@@ -857,6 +910,17 @@ document.getElementById('app').addEventListener('click',async e=>{
   }catch(_){}
   poll();
 });
+// Unix seconds -> a coarse age. Coarse on purpose: this is a proxy for when a
+// job last ran, and reporting it to the second would dress a guess up as a
+// measurement.
+function rel(ts){
+  const s=Math.max(0,Math.round(Date.now()/1000-ts));
+  if(s<90) return 'just now';
+  if(s<5400) return Math.round(s/60)+'m ago';
+  if(s<172800) return Math.round(s/3600)+'h ago';
+  return Math.round(s/86400)+'d ago';
+}
+
 function tick(){
   const t=new Date();
   document.getElementById('clock').textContent=' · '+
