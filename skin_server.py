@@ -109,6 +109,8 @@ def head_block(sk):
     return (
         f'<meta name="{MARK}" content="{sid}">'
         f'<meta name="apple-mobile-web-app-capable" content="yes">'
+        # Chrome reads the unprefixed form; iOS only honours the apple- one.
+        f'<meta name="mobile-web-app-capable" content="yes">'
         f'<meta name="apple-mobile-web-app-title" content="{name}">'
         f'<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
         f'<meta name="theme-color" content="{THEME}">'

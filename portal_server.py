@@ -571,6 +571,9 @@ PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<!-- The unprefixed form is what Chrome reads; the apple- one above is
+     deprecated there but still the only one iOS honours. Both, therefore. -->
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="__MACHINE__">
 <meta name="theme-color" content="#05070a">
@@ -1139,7 +1142,14 @@ class Handler(BaseHTTPRequestHandler):
                 "short_name": MACHINE,
                 "start_url": "/",
                 "scope": "/",
-                "display": "standalone",
+                # Ask for the whole screen and let the platform climb down.
+                # Android honours `fullscreen` and drops the status bar
+                # entirely; iOS ignores it and gives standalone, which with
+                # black-translucent below is already its ceiling. Listing the
+                # fallbacks explicitly means a browser that supports neither
+                # lands on minimal-ui rather than a browser tab.
+                "display": "fullscreen",
+                "display_override": ["fullscreen", "standalone", "minimal-ui"],
                 "background_color": "#05070a",
                 "theme_color": "#05070a",
                 "orientation": "portrait",
