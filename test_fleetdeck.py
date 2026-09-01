@@ -197,6 +197,18 @@ check("LIVE-7 failures sort ahead of healthy tiles",
           [x["health"] for x in ags],
           key=lambda h: {"fail": 0, "off": 1, "run": 2, "ok": 3}[h]))
 
+# Every browser-facing tile should resolve to https. A plain-http origin is not
+# a secure context, so Add to Home Screen degrades on exactly the tiles worth
+# installing, and anything bound wider than loopback is also answering on the
+# local Wi-Fi — a network that is not a boundary. `kind: api` tiles are exempt:
+# they are never linked, so no browser ever lands on one.
+insecure = [s for s in d.get("services", [])
+            if (s.get("url") or "").startswith("http://")
+            and s.get("kind") != "api" and s.get("linkable")]
+check("LIVE-9 no linkable tile is served over plain http",
+      not insecure,
+      ", ".join(f"{s['name']} {s['url']}" for s in insecure))
+
 try:
     page = get("/").read().decode()
     check("LIVE-8 the board renders with glyphs interpolated",
