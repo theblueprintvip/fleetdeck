@@ -1647,8 +1647,12 @@ PHONE_APPS = ["chat", "messages", "cockpit", "graph", "terminal", "pm"]
 # If the cockpit is down the key falls back to /call — the local briefing, which
 # needs nothing but this machine. Degrading to something that still works beats
 # a dead button, and the label says which one you are getting.
+# `?call=1` asks the cockpit for the CALL SCREEN rather than the Trace console.
+# Without it the key landed on an admin surface whose own call button was a
+# chip in the corner: a call screen handing off to a text UI containing a
+# second, smaller CALL. One intent, one screen.
 CALL_TARGET_ID = "cockpit"
-CALL_TARGET_PATH = "/admin/trace"
+CALL_TARGET_PATH = "/admin/trace?call=1"
 
 
 def call_destination(by_id):
@@ -2254,10 +2258,15 @@ PHONE_PAGE = """<!doctype html>
    // tap had registered — so of course the next thing you do is tap it again.
    //
    // So the tap is taken and the navigation is issued a beat later. The beat is
-   // where the sound and the acknowledgement live. It is real added latency and
-   // it is on purpose: this is a call, and a call has a moment of dialling. The
-   // destination spends longer than this booting.
-   var HOLD = 780;
+   // where the sound lives — it dies with this document, and a blip cut off
+   // after 50ms is not a sound, it is a click.
+   //
+   // 320ms and not longer, because the cockpit now answers ?call=1 with the
+   // same figure inside the same rings and starts connecting on arrival. This
+   // screen no longer has to stand in for the destination; it only has to hold
+   // long enough for the line-opening sweep to finish, and then get out of the
+   // way of a screen that continues it.
+   var HOLD = 320;
    call.addEventListener('click', function(e){
      e.preventDefault();
      if(armed) return;                     // a second tap is not a second call
