@@ -2141,9 +2141,58 @@ PHONE_PAGE = """<!doctype html>
    // A relative href is the local briefing this server renders itself; anything
    // else is the cockpit, on another origin, over the tailnet. Only the second
    // one can be slow enough to need an escape hatch.
-   var remote = call.getAttribute('href').charAt(0) !== '/';
+   var href = call.getAttribute('href');
+   var remote = href.charAt(0) !== '/';
    var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-   var t0 = 0, timers = [], scramble = 0;
+   var t0 = 0, timers = [], scramble = 0, ringing = 0, armed = false;
+
+   // ── the sound of placing it ──────────────────────────────────────────────
+   // Synthesised, not a file: this server ships no binary assets it does not
+   // have to, and an oscillator costs nothing to serve and nothing to cache.
+   //
+   // The context is built inside the tap and nowhere else. iOS starts every
+   // AudioContext suspended and only resume() inside a user gesture lifts it —
+   // the same rule that made the briefing page unlock its <audio> element with
+   // a silent wav on first touch.
+   var AC = window.AudioContext || window.webkitAudioContext, actx = null;
+   function env(osc, gain, t, dur, peak){
+     gain.gain.setValueAtTime(0.0001, t);
+     gain.gain.linearRampToValueAtTime(peak, t + Math.min(0.014, dur * 0.3));
+     gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+     osc.connect(gain); gain.connect(actx.destination);
+     osc.start(t); osc.stop(t + dur + 0.03);
+   }
+   function blip(f, dur, t, type, peak){
+     var o = actx.createOscillator(); o.type = type || 'triangle';
+     o.frequency.setValueAtTime(f, t);
+     env(o, actx.createGain(), t, dur, peak);
+   }
+   function sweep(a, b, dur, t, peak){
+     var o = actx.createOscillator(); o.type = 'triangle';
+     o.frequency.setValueAtTime(a, t);
+     o.frequency.exponentialRampToValueAtTime(b, t + dur);
+     env(o, actx.createGain(), t, dur, peak);
+   }
+   // A major third, quietly. A ring, not an alarm — this plays in a hand, in
+   // public, at whatever hour the fleet decides to need attention.
+   function ring(t){ blip(523.25, .38, t, 'sine', .085); blip(659.25, .38, t, 'sine', .055); }
+
+   function seize(){
+     if(!AC) return;                       // no WebAudio: the screen still works
+     try{
+       if(!actx) actx = new AC();
+       if(actx.state === 'suspended') actx.resume();
+       var t = actx.currentTime;
+       blip(1180, .035, t, 'square', .07);  // the key going down
+       sweep(420, 1420, .24, t + .055, .10); // the line opening
+       ring(t + .44);
+       var rings = 1;
+       ringing = setInterval(function(){
+         if(++rings > 10){ clearInterval(ringing); ringing = 0; return; }
+         ring(actx.currentTime);
+       }, 1500);
+     }catch(e){}                            // a refused context is not a reason
+   }                                        // to swallow the call
 
    // Resolve the line rather than swapping it. It is the only thing on the
    // screen that changes meaning, and a hard swap reads as a glitch instead of
@@ -2191,11 +2240,33 @@ PHONE_PAGE = """<!doctype html>
      conn.classList.remove('on'); conn.setAttribute('aria-hidden', 'true');
      bail.classList.remove('on');
      clearInterval(scramble);
+     if(ringing){ clearInterval(ringing); ringing = 0; }
      timers.forEach(function(t){ clearTimeout(t); clearInterval(t); });
-     timers = [];
+     timers = []; armed = false;
    }
 
-   call.addEventListener('click', open);   // the navigation still proceeds
+   // ── why the navigation waits ─────────────────────────────────────────────
+   // The cockpit answers /admin/trace in about fifty milliseconds. Letting the
+   // click through meant the document was replaced before this screen could be
+   // painted even once: the whole thing was built for a cold cockpit and the
+   // cockpit is not cold. Tapping CALL teleported you to someone else's
+   // `booting…` with no sound, no acknowledgement, and no reason to believe the
+   // tap had registered — so of course the next thing you do is tap it again.
+   //
+   // So the tap is taken and the navigation is issued a beat later. The beat is
+   // where the sound and the acknowledgement live. It is real added latency and
+   // it is on purpose: this is a call, and a call has a moment of dialling. The
+   // destination spends longer than this booting.
+   var HOLD = 780;
+   call.addEventListener('click', function(e){
+     e.preventDefault();
+     if(armed) return;                     // a second tap is not a second call
+     armed = true;
+     open(); seize();
+     timers.push(setTimeout(function(){ location.href = href; }, HOLD));
+   });
+   // Within the beat this genuinely stops the call, which is the only window in
+   // which anything could.
    cancel.addEventListener('click', close);
 
    // Coming back from the cockpit restores this page from the back-forward
