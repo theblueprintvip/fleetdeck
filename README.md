@@ -106,6 +106,45 @@ on a 404.
 
 ---
 
+## Two front doors
+
+The board shows everything on the machine, which is what a board is for.
+`/phone` is the opposite surface: a clock and six keys sized for a thumb, for
+the times you already know where you are going.
+
+| path | always renders |
+|---|---|
+| `/board` | the board |
+| `/phone` | the simple screen |
+| `/` | whichever one this device chose |
+
+The **⠿ button in the board header** switches between them, and the
+**`set as home`** link in the simple screen's footer does the same from the
+other side. Either way it writes one cookie, `fd_home`, and lands you on the
+surface you picked.
+
+The choice is per **device**, not per machine — the board belongs on the desk
+where there is room for forty tiles, the simple screen belongs on the phone, and
+a setting in `config.json` would force one answer onto both. It is a cookie for
+the same reason it is a redirect and not a script: the simple screen is
+server-rendered and carries almost no JS, and a preference that needs JS to
+stick is a preference that fails on the surface most likely to be opened when
+something is already wrong.
+
+`/` is the installed tile's `start_url`, so this is what "change to the simple
+UI" actually changes. The canonical paths never follow the cookie — that is
+what keeps a route back from a phone that has chosen the simple screen. Any
+value that is not `simple` — absent, junk, or invented by a newer build — means
+the board, because the board is the surface that can reach everything.
+
+Which six keys appear is one line, `PHONE_APPS`, resolved against the same
+registry the board uses. A registered service that is down still gets its key,
+dimmed and labelled: hiding it would make a dead service and an unregistered one
+look identical from the one screen most likely to be opened when something is
+wrong.
+
+---
+
 ## Agents
 
 This is the half a port scan cannot see. Most of an operator's fleet is

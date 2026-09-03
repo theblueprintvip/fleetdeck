@@ -62,6 +62,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
+from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -648,6 +649,19 @@ PAGE = """<!doctype html>
     display:inline-flex;align-items:center;justify-content:center;
   }
   #ins:active,#ins:hover{border-color:var(--on);color:var(--on)}
+  /* Which surface answers `/`. A link and not a script toggle, so it also
+     navigates to the surface it selects — the state is never something you
+     have to read off a button, because you are looking at it. */
+  #simple{
+    margin-left:8px;flex:none;width:30px;height:30px;padding:0;
+    background:transparent;border:1px solid var(--line);border-radius:3px;
+    color:var(--ink);cursor:pointer;line-height:0;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  #simple:active,#simple:hover{border-color:var(--on);color:var(--on)}
+  /* Lit = the simple screen is this device's home. Tapping it then hands `/`
+     back to the board, without leaving the board you are already on. */
+  #simple.on{border-color:var(--on);color:var(--on);background:rgba(79,227,193,.09)}
   #sheet{
     position:fixed;inset:0;z-index:20;display:none;overflow:auto;
     background:rgba(5,7,10,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
@@ -791,6 +805,21 @@ PAGE = """<!doctype html>
       <rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 8v7M8.5 11.5h7"/>
     </svg>
   </button>
+  <!-- Four big keys, not a phone. The button beside this one is already a phone
+       outline, and two phone glyphs a hair apart is a header you have to read
+       twice; this says what the simple screen IS — fewer keys, larger. Drawn at
+       17px against its neighbours' 14 because it is four separate shapes inset
+       from the viewBox edge: same ink, more room to keep them apart. -->
+  <a id="simple" class="__SIMPLE_CLASS__" href="__SIMPLE_HREF__"
+     title="__SIMPLE_TITLE__" aria-label="__SIMPLE_TITLE__">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="2.5" width="8.5" height="8.5" rx="1.5"/>
+      <rect x="13" y="2.5" width="8.5" height="8.5" rx="1.5"/>
+      <rect x="2.5" y="13" width="8.5" height="8.5" rx="1.5"/>
+      <rect x="13" y="13" width="8.5" height="8.5" rx="1.5"/>
+    </svg>
+  </a>
 </header>
 <div id="hint"></div>
 <main id="app"></main>
@@ -1556,6 +1585,40 @@ def brief_text():
     return " ".join(parts)
 
 
+# ── which surface is home ────────────────────────────────────────────────────
+# Two front doors now exist and one of them has to answer `/`. That choice is
+# per DEVICE, not per machine: the board belongs on the desk where there is room
+# for forty tiles, and the simple screen belongs on the phone. A setting in
+# config.json would force one answer onto both, so this is a cookie.
+#
+# The canonical paths never lie — `/board` is always the board and `/phone` is
+# always the simple screen, whatever the cookie says. Only `/` follows the
+# preference, which is what the installed Home Screen tile opens (start_url is
+# `/`), and so what "change to simple UI" actually has to change.
+#
+# Set through a GET that redirects rather than from script, because the simple
+# screen is server-rendered and carries almost no JS — and a preference that
+# needs JS to stick is a preference that fails on the surface most likely to be
+# opened when something is already wrong.
+HOME_COOKIE = "fd_home"
+HOME_CHOICES = ("board", "simple")
+HOME_MAX_AGE = 60 * 60 * 24 * 365
+
+
+def home_pref(cookie_header):
+    """Which surface this device wants at `/`. Board unless told otherwise."""
+    if not cookie_header:
+        return "board"
+    try:
+        jar = SimpleCookie()
+        jar.load(cookie_header)
+    except Exception:
+        return "board"          # a malformed jar is not worth a 500
+    got = jar.get(HOME_COOKIE)
+    value = got.value if got else ""
+    return value if value in HOME_CHOICES else "board"
+
+
 # ── /phone ───────────────────────────────────────────────────────────────────
 # The board shows everything on the machine, which is what a board is for. This
 # is the opposite surface: a clock and six buttons sized for a thumb, for the
@@ -1963,11 +2026,16 @@ PHONE_PAGE = """<!doctype html>
    50%{box-shadow:0 0 16px rgba(79,227,193,.40)}}
  .foot{text-align:center;font-size:11px;letter-spacing:.14em;color:#2b3a45;padding-top:4px}
  .foot a{color:#4a5b68;text-decoration:none}
+ .foot a:active{color:#4fe3c1}
+ /* Lit when this screen already owns `/`, so the sentence reads as a state
+    before it reads as a button. */
+ .foot a.on{color:#4fe3c1}
+ .foot .sep{padding:0 8px;color:#18222b}
 </style></head><body>
  <div class="clock"><div class="time" id="t">--:--</div><div class="date" id="d">&nbsp;</div></div>
  <div class="grid">__KEYS__</div>
  <a class="call" href="__CALL_HREF__"><img src="/trace-192.png" alt="" class="face"><span>__CALL_LABEL__</span><em>__CALL_SUB__</em></a>
- <div class="foot"><a href="/">all __N__ services &rsaquo;</a></div>
+ <div class="foot"><a href="/board">all __N__ services &rsaquo;</a><span class="sep">·</span>__HOME_TOGGLE__</div>
 <script>
  function tick(){
    var n=new Date();
@@ -2116,41 +2184,32 @@ class Handler(BaseHTTPRequestHandler):
                 ],
             }), "application/manifest+json")
 
-        if path == "/phone":
-            scan_now = cached_scan()
-            by_id = {s["id"]: s for s in scan_now.get("services", [])}
-            glyphs = glyph_map()
-            keys = []
-            for app_id in PHONE_APPS:
-                s = by_id.get(app_id)
-                if not s:
-                    # Named on the front screen and absent from the registry is
-                    # an editing mistake, not a state. Say so rather than
-                    # quietly rendering five buttons where six were asked for.
-                    keys.append(
-                        '<span class="key"><span class="st">%s not registered</span></span>'
-                        % esc_html(app_id))
-                    continue
-                label = PHONE_LABELS.get(app_id, s.get("name") or app_id)
-                icon = glyphs.get(s.get("icon"), glyphs.get("server", FALLBACK_GLYPH))
-                svg = '<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % icon
-                if s.get("linkable"):
-                    keys.append('<a class="key" href="%s">%s<span>%s</span></a>'
-                                % (esc_html(s["url"]), svg, esc_html(label)))
-                else:
-                    why = "down" if not s.get("up") else "no browser UI"
-                    keys.append('<span class="key">%s<span>%s</span>'
-                                '<span class="st">%s</span></span>'
-                                % (svg, esc_html(label), why))
-            href, label, sub = call_destination(by_id)
-            page = (PHONE_PAGE
-                    .replace("__MACHINE__", esc_html(MACHINE))
-                    .replace("__KEYS__", "".join(keys))
-                    .replace("__CALL_HREF__", esc_html(href))
-                    .replace("__CALL_LABEL__", esc_html(label))
-                    .replace("__CALL_SUB__", esc_html(sub))
-                    .replace("__N__", str(len(scan_now.get("services", [])))))
-            return self._send(200, page, "text/html; charset=utf-8")
+        # `/home?ui=…` is the only thing that writes the preference. It answers
+        # with a redirect to the surface it just selected, so choosing and
+        # arriving are one tap and there is no state to disbelieve.
+        if path == "/home":
+            q = {}
+            if "?" in self.path:
+                from urllib.parse import parse_qs
+                q = parse_qs(self.path.split("?", 1)[1])
+            want = (q.get("ui") or [""])[0]
+            if want not in HOME_CHOICES:
+                return self._send(400, "ui must be board or simple\n", "text/plain")
+            dest = "/phone" if want == "simple" else "/board"
+            cookie = ("%s=%s; Path=/; Max-Age=%d; SameSite=Lax"
+                      % (HOME_COOKIE, want, HOME_MAX_AGE))
+            # 303: this was a GET that changed something, and the browser should
+            # not re-issue it when the operator hits back.
+            return self._send(303, "", "text/plain",
+                              {"Location": dest, "Set-Cookie": cookie})
+
+        if path in ("/phone", "/"):
+            if path == "/" and home_pref(self.headers.get("Cookie")) != "simple":
+                return self._board()
+            return self._phone()
+
+        if path == "/board":
+            return self._board()
 
         if path == "/manifest.webmanifest":
             return self._send(200, json.dumps({
@@ -2210,17 +2269,70 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/api/status", "/api"):
             return self._send(200, json.dumps(cached_scan()), "application/json")
 
-        if path == "/":
-            data = json.dumps(cached_scan()).replace("</", "<\\/")
-            glyphs = json.dumps(glyph_map(), separators=(",", ":")).replace("</", "<\\/")
-            page = (PAGE
-                    .replace("__BRAND__", esc_html(BRAND))
-                    .replace("__MACHINE__", esc_html(MACHINE))
-                    .replace("__GLYPHS__", glyphs)
-                    .replace("window.__DATA__", f"JSON.parse({json.dumps(data)})"))
-            return self._send(200, page, "text/html; charset=utf-8")
-
         self._send(404, "not here\n", "text/plain")
+
+    # ── the two front doors ──────────────────────────────────────────────────
+    # Both are reachable by a canonical path that always renders them, and `/`
+    # picks between them from the cookie. Keeping them as methods rather than
+    # branches in do_GET is what lets `/` do that without duplicating either.
+
+    def _board(self):
+        simple_is_home = home_pref(self.headers.get("Cookie")) == "simple"
+        data = json.dumps(cached_scan()).replace("</", "<\\/")
+        glyphs = json.dumps(glyph_map(), separators=(",", ":")).replace("</", "<\\/")
+        page = (PAGE
+                .replace("__BRAND__", esc_html(BRAND))
+                .replace("__MACHINE__", esc_html(MACHINE))
+                .replace("__SIMPLE_CLASS__", "on" if simple_is_home else "")
+                .replace("__SIMPLE_HREF__",
+                         "/home?ui=board" if simple_is_home else "/home?ui=simple")
+                .replace("__SIMPLE_TITLE__",
+                         "Simple screen is this device's home — tap for the board"
+                         if simple_is_home else "Switch to the simple screen")
+                .replace("__GLYPHS__", glyphs)
+                .replace("window.__DATA__", f"JSON.parse({json.dumps(data)})"))
+        return self._send(200, page, "text/html; charset=utf-8")
+
+    def _phone(self):
+        simple_is_home = home_pref(self.headers.get("Cookie")) == "simple"
+        scan_now = cached_scan()
+        by_id = {s["id"]: s for s in scan_now.get("services", [])}
+        glyphs = glyph_map()
+        keys = []
+        for app_id in PHONE_APPS:
+            s = by_id.get(app_id)
+            if not s:
+                # Named on the front screen and absent from the registry is an
+                # editing mistake, not a state. Say so rather than quietly
+                # rendering five buttons where six were asked for.
+                keys.append(
+                    '<span class="key"><span class="st">%s not registered</span></span>'
+                    % esc_html(app_id))
+                continue
+            label = PHONE_LABELS.get(app_id, s.get("name") or app_id)
+            icon = glyphs.get(s.get("icon"), glyphs.get("server", FALLBACK_GLYPH))
+            svg = '<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>' % icon
+            if s.get("linkable"):
+                keys.append('<a class="key" href="%s">%s<span>%s</span></a>'
+                            % (esc_html(s["url"]), svg, esc_html(label)))
+            else:
+                why = "down" if not s.get("up") else "no browser UI"
+                keys.append('<span class="key">%s<span>%s</span>'
+                            '<span class="st">%s</span></span>'
+                            % (svg, esc_html(label), why))
+        href, label, sub = call_destination(by_id)
+        toggle = ('<a class="on" href="/home?ui=board">unset as home</a>'
+                  if simple_is_home
+                  else '<a href="/home?ui=simple">set as home</a>')
+        page = (PHONE_PAGE
+                .replace("__MACHINE__", esc_html(MACHINE))
+                .replace("__KEYS__", "".join(keys))
+                .replace("__CALL_HREF__", esc_html(href))
+                .replace("__CALL_LABEL__", esc_html(label))
+                .replace("__CALL_SUB__", esc_html(sub))
+                .replace("__HOME_TOGGLE__", toggle)
+                .replace("__N__", str(len(scan_now.get("services", [])))))
+        return self._send(200, page, "text/html; charset=utf-8")
 
     def do_POST(self):
         """The one mutating route. Off unless agents.actions is switched on —

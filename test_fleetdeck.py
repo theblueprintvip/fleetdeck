@@ -18,6 +18,7 @@ import plistlib
 import ssl
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -156,6 +157,21 @@ first = next(iter(a))
 check("UNIT-10 failures sort first, before name",
       first == "com.acme.a-fail", f"first tile was {first}")
 
+# ── which surface is home ────────────────────────────────────────────────────
+# The cookie decides what `/` renders, and `/` is the installed tile's start_url.
+# Every way of not saying "simple" — absent, empty, junk, or a value invented by
+# a newer build — has to mean the board, because the board is the surface that
+# can reach everything and so the only safe thing to fall back to.
+check("UNIT-12 no cookie is the board", P.home_pref(None) == "board")
+check("UNIT-13 a stated preference is honoured",
+      P.home_pref("a=1; fd_home=simple; b=2") == "simple",
+      P.home_pref("a=1; fd_home=simple; b=2"))
+for label, jar in (("junk", "fd_home=;;;=junk"),
+                   ("an unknown value", "fd_home=hologram"),
+                   ("another app's cookie", "session=abc")):
+    check(f"UNIT-14 {label} falls back to the board",
+          P.home_pref(jar) == "board", P.home_pref(jar))
+
 # ── live ─────────────────────────────────────────────────────────────────────
 
 if "--unit" in sys.argv:
@@ -165,8 +181,30 @@ if "--unit" in sys.argv:
 ctx = ssl.create_default_context()
 
 
-def get(path):
-    return urllib.request.urlopen(BASE + path, timeout=20, context=ctx)
+def get(path, cookie=None):
+    req = urllib.request.Request(BASE + path)
+    if cookie:
+        req.add_header("Cookie", cookie)
+    return urllib.request.urlopen(req, timeout=20, context=ctx)
+
+
+class _NoFollow(urllib.request.HTTPRedirectHandler):
+    """`/home` is only interesting for the headers it answers with, and
+    following the redirect throws them away."""
+
+    def redirect_request(self, *a):
+        return None
+
+
+def raw(path):
+    """(status, headers) without chasing a Location."""
+    opener = urllib.request.build_opener(_NoFollow,
+                                         urllib.request.HTTPSHandler(context=ctx))
+    try:
+        r = opener.open(BASE + path, timeout=20)
+        return r.status, r.headers
+    except urllib.error.HTTPError as e:
+        return e.code, e.headers
 
 
 try:
@@ -215,6 +253,49 @@ try:
           "__GLYPHS__" not in page and "const I={" in page)
 except Exception as e:
     check("LIVE-8 the board renders with glyphs interpolated", False, str(e))
+
+# ── the home toggle, end to end ──────────────────────────────────────────────
+# The failure this guards against is not cosmetic: get it wrong and `/` serves
+# one surface while the toggle claims the other, on a phone, with no way back.
+
+try:
+    board_default = get("/").read().decode()
+    simple_at_root = get("/", "fd_home=simple").read().decode()
+    board_forced = get("/board", "fd_home=simple").read().decode()
+    phone = get("/phone").read().decode()
+
+    # `const I={` is the board's glyph payload; `id="t"` is the simple screen's
+    # clock. Each surface is identified by something only it has, and asserted
+    # absent from the other, so a half-rendered page cannot pass as either.
+    check("LIVE-10 `/` is the board until told otherwise",
+          "const I={" in board_default and 'id="t"' not in board_default)
+    check("LIVE-11 `/` follows the cookie to the simple screen",
+          'id="t"' in simple_at_root and "const I={" not in simple_at_root)
+    # The canonical paths are the escape hatch. If `/board` ever started
+    # honouring the cookie there would be no route back from a phone that had
+    # chosen the simple screen.
+    check("LIVE-12 `/board` renders the board whatever the cookie says",
+          "const I={" in board_forced)
+    check("LIVE-13 the board's toggle reflects the current home",
+          'id="simple" class="on" href="/home?ui=board"' in board_forced
+          and 'href="/home?ui=simple"' in board_default)
+    check("LIVE-14 no placeholder survives to either surface",
+          "__SIMPLE_" not in board_default and "__HOME_TOGGLE__" not in phone
+          and "__CALL_HREF__" not in phone and "__N__" not in phone)
+except Exception as e:
+    check("LIVE-10..14 the two surfaces render", False, str(e))
+
+for ui, dest in (("simple", "/phone"), ("board", "/board")):
+    status, hdrs = raw(f"/home?ui={ui}")
+    check(f"LIVE-15 /home?ui={ui} sets the cookie and lands on {dest}",
+          status == 303 and hdrs.get("Location") == dest
+          and f"{P.HOME_COOKIE}={ui}" in (hdrs.get("Set-Cookie") or ""),
+          f"{status} {hdrs.get('Location')} {hdrs.get('Set-Cookie')}")
+
+status, hdrs = raw("/home?ui=hologram")
+check("LIVE-16 an unknown ui is refused and writes nothing",
+      status == 400 and not hdrs.get("Set-Cookie"),
+      f"{status} {hdrs.get('Set-Cookie')}")
 
 print("\n" + ("ALL PASS" if not _fails else f"{len(_fails)} FAILED: "
                                             + ", ".join(_fails)))
