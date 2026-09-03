@@ -283,11 +283,12 @@ try:
           "__SIMPLE_" not in board_default and "__HOME_TOGGLE__" not in phone
           and "__CALL_HREF__" not in phone and "__CALL_DEST__" not in phone
           and "__N__" not in phone)
-    # The connecting screen is only ever seen when something is slow, which is
-    # the condition least likely to be exercised by hand before a release.
-    check("LIVE-17 the connecting screen ships with the simple screen",
-          'id="conn"' in phone and 'id="cst"' in phone and 'class="rings"' in phone
-          and "/trace-192.png" in phone)
+    # The CALL key acknowledges the tap here and connects on the cockpit, which
+    # draws the only connecting screen. Drawing a second one here is the
+    # regression this guards: one action, one overlay.
+    check("LIVE-17 the phone screen draws no connecting screen of its own",
+          'id="conn"' not in phone and "class=\"rings\"" not in phone
+          and "a.call.opening" in phone and "?call=1" in phone)
 except Exception as e:
     check("LIVE-10..14 the two surfaces render", False, str(e))
 

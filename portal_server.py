@@ -2036,96 +2036,20 @@ PHONE_PAGE = """<!doctype html>
  .foot a.on{color:#4fe3c1}
  .foot .sep{padding:0 8px;color:#18222b}
 
- /* ── the connecting screen ───────────────────────────────────────────────
-    CALL is a cross-origin navigation over the tailnet to an app that may be
-    cold, and launched from the Home Screen there is no browser chrome to show
-    a load. The screen simply sits there looking dead, which makes a second tap
-    inevitable — and a second tap on a call is the worst possible place for one.
-
-    What it draws is an outgoing call, not progress. A cross-origin load reports
-    nothing back, so a bar filling toward 100% would be inventing a number: the
-    same lie the board refuses to tell about a link it has not resolved. Rings
-    leave and do not arrive, which is what is actually happening, and the one
-    figure on the screen is elapsed time, which is true. */
- #conn{position:fixed;inset:0;z-index:50;display:none;overflow:hidden;
-   flex-direction:column;align-items:center;justify-content:center;background:#05070a;
-   padding:max(24px,env(safe-area-inset-top)) 22px max(24px,env(safe-area-inset-bottom))}
- #conn.on{display:flex;animation:cfade .14s ease-out both}
- @keyframes cfade{from{opacity:0}to{opacity:1}}
- /* The carrier: one band crossing the screen, forever, arriving nowhere.
-    Linear on purpose — this is a machine sweeping a line, not an object
-    that accelerates. */
- #conn .carrier{position:absolute;left:0;right:0;top:-160px;height:160px;pointer-events:none;
-   background:linear-gradient(180deg,transparent,rgba(79,227,193,.13),transparent);
-   animation:carrier 2.4s linear infinite;will-change:transform}
- @keyframes carrier{to{transform:translateY(calc(100vh + 160px))}}
- /* The board wears this veil too. Same machine, same grain. */
- #conn .veil{position:absolute;inset:0;pointer-events:none;opacity:.55;
-   background:repeating-linear-gradient(180deg,rgba(0,0,0,.3) 0 1px,transparent 1px 3px)}
- .cwrap{position:relative;width:min(232px,62vw);height:min(232px,62vw);flex:none;
-   display:flex;align-items:center;justify-content:center;
-   animation:crise .5s cubic-bezier(.16,1,.3,1) both}
- @keyframes crise{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
- .rings{position:absolute;inset:0}
- .rings i{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px 0 0 -48px;
-   border:1px solid #4fe3c1;border-radius:50%;opacity:0;will-change:transform,opacity;
-   animation:ring 2.6s cubic-bezier(.16,1,.3,1) infinite}
- .rings i:nth-child(2){animation-delay:.86s}
- .rings i:nth-child(3){animation-delay:1.72s}
- @keyframes ring{0%{transform:scale(.5);opacity:.85}
-   70%{opacity:.14}100%{transform:scale(2.45);opacity:0}}
- .cface{position:relative;width:84px;height:84px;border-radius:50%;object-fit:cover;
-   border:2px solid rgba(79,227,193,.5);animation:tbreathe 2.8s ease-in-out infinite}
- .cwho{margin-top:4px;font-size:15px;letter-spacing:.34em;color:#4fe3c1;text-transform:uppercase}
- .cdest{margin-top:10px;font-size:10px;letter-spacing:.2em;color:#2f7d6d;
-   text-transform:uppercase;text-align:center}
- .cst{margin-top:24px;font-size:12px;letter-spacing:.2em;color:#8fa3b0;
-   text-transform:uppercase;text-align:center;min-height:1.3em}
- .cel{margin-top:8px;font-size:11px;letter-spacing:.18em;color:#2b3a45;
-   font-variant-numeric:tabular-nums}
- /* Parked at the bottom rather than added to the centred stack. Appearing in
-    flow would re-centre the column and jog Trace's face several seconds into a
-    call — a face that moves on its own reads as a fault, which is the one thing
-    this screen exists to avoid suggesting. */
- .cbail{position:absolute;left:22px;right:22px;
-   bottom:max(30px,env(safe-area-inset-bottom));
-   display:none;flex-direction:column;align-items:center;gap:9px;
-   animation:cfade .3s ease-out both}
- .cbail.on{display:flex}
- .cbtn{border:1px solid #1d5f52;border-radius:10px;background:#0b1a17;color:#4fe3c1;
-   font:inherit;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
-   padding:11px 18px;text-decoration:none;cursor:pointer}
- .cbtn:active{border-color:#4fe3c1;background:#10241f}
- .cbtn.ghost{background:transparent;border-color:#18222b;color:#4a5b68}
- /* Everything above is decoration around one fact. Strip the motion and the
-    fact is still on the screen. */
- @media (prefers-reduced-motion:reduce){
-   #conn .carrier{display:none}
-   #conn.on,.cwrap,.cface,.cbail{animation:none}
-   .rings i{animation:none;opacity:.2;transform:scale(1.45)}
-   .rings i:nth-child(2),.rings i:nth-child(3){display:none}
- }
+ /* Tapping CALL acknowledges here and connects THERE. The cockpit answers
+    ?call=1 with the connecting screen — the same figure, the same rings — so
+    drawing one here too was two overlays for one action, and the operator has
+    to sit through both. This screen's job is now only to say the tap landed:
+    the key lights, the sound plays, and the surface that is actually
+    connecting is the one that shows connecting. */
+ a.call.opening{border-color:#4fe3c1;background:#10241f}
+ a.call.opening span{opacity:.55}
 </style></head><body>
  <div class="clock"><div class="time" id="t">--:--</div><div class="date" id="d">&nbsp;</div></div>
  <div class="grid">__KEYS__</div>
  <a class="call" href="__CALL_HREF__"><img src="/trace-192.png" alt="" class="face"><span>__CALL_LABEL__</span><em>__CALL_SUB__</em></a>
  <div class="foot"><a href="/board">all __N__ services &rsaquo;</a><span class="sep">·</span>__HOME_TOGGLE__</div>
 
- <div id="conn" aria-hidden="true">
-   <div class="carrier"></div><div class="veil"></div>
-   <div class="cwrap">
-     <div class="rings"><i></i><i></i><i></i></div>
-     <img src="/trace-192.png" alt="" class="cface">
-   </div>
-   <div class="cwho">Trace</div>
-   <div class="cdest">__CALL_DEST__</div>
-   <div class="cst" id="cst" role="status" aria-live="polite">opening the line</div>
-   <div class="cel" id="cel">0.0s</div>
-   <div class="cbail" id="cbail">
-     <a class="cbtn" href="/call">take the local brief</a>
-     <button class="cbtn ghost" id="ccancel" type="button">cancel</button>
-   </div>
- </div>
 <script>
  function tick(){
    var n=new Date();
@@ -2136,153 +2060,60 @@ PHONE_PAGE = """<!doctype html>
  }
  tick(); setInterval(tick, 10000);
 
+
+ // ── the tap ──────────────────────────────────────────────────────────────
+ // Sound only. The screen this leads to draws the connecting state, so drawing
+ // one here as well meant the operator sat through two of them for one action.
+ //
+ // The hold is 160ms: long enough for the key to light and the first blip to
+ // land, short enough that it reads as the button responding rather than as a
+ // wait. The line-opening sweep is deliberately gone with the overlay — a sound
+ // describing a screen that is no longer here was the audio half of the same
+ // duplication.
  (function(){
    var call = document.querySelector('a.call');
-   var conn = document.getElementById('conn');
-   if(!call || !conn) return;
-   var stEl = document.getElementById('cst'), elEl = document.getElementById('cel');
-   var bail = document.getElementById('cbail'), cancel = document.getElementById('ccancel');
-   // A relative href is the local briefing this server renders itself; anything
-   // else is the cockpit, on another origin, over the tailnet. Only the second
-   // one can be slow enough to need an escape hatch.
+   if(!call) return;
    var href = call.getAttribute('href');
-   var remote = href.charAt(0) !== '/';
-   var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-   var t0 = 0, timers = [], scramble = 0, ringing = 0, armed = false;
+   var armed = false;
 
-   // ── the sound of placing it ──────────────────────────────────────────────
-   // Synthesised, not a file: this server ships no binary assets it does not
-   // have to, and an oscillator costs nothing to serve and nothing to cache.
-   //
-   // The context is built inside the tap and nowhere else. iOS starts every
-   // AudioContext suspended and only resume() inside a user gesture lifts it —
-   // the same rule that made the briefing page unlock its <audio> element with
-   // a silent wav on first touch.
+   // Built inside the tap and nowhere else: iOS starts every AudioContext
+   // suspended and only resume() inside a user gesture lifts it.
    var AC = window.AudioContext || window.webkitAudioContext, actx = null;
-   function env(osc, gain, t, dur, peak){
-     gain.gain.setValueAtTime(0.0001, t);
-     gain.gain.linearRampToValueAtTime(peak, t + Math.min(0.014, dur * 0.3));
-     gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-     osc.connect(gain); gain.connect(actx.destination);
-     osc.start(t); osc.stop(t + dur + 0.03);
-   }
    function blip(f, dur, t, type, peak){
-     var o = actx.createOscillator(); o.type = type || 'triangle';
-     o.frequency.setValueAtTime(f, t);
-     env(o, actx.createGain(), t, dur, peak);
+     var o = actx.createOscillator(), g = actx.createGain();
+     o.type = type; o.frequency.setValueAtTime(f, t);
+     g.gain.setValueAtTime(0.0001, t);
+     g.gain.linearRampToValueAtTime(peak, t + 0.012);
+     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+     o.connect(g); g.connect(actx.destination);
+     o.start(t); o.stop(t + dur + 0.03);
    }
-   function sweep(a, b, dur, t, peak){
-     var o = actx.createOscillator(); o.type = 'triangle';
-     o.frequency.setValueAtTime(a, t);
-     o.frequency.exponentialRampToValueAtTime(b, t + dur);
-     env(o, actx.createGain(), t, dur, peak);
-   }
-   // A major third, quietly. A ring, not an alarm — this plays in a hand, in
-   // public, at whatever hour the fleet decides to need attention.
-   function ring(t){ blip(523.25, .38, t, 'sine', .085); blip(659.25, .38, t, 'sine', .055); }
-
    function seize(){
-     if(!AC) return;                       // no WebAudio: the screen still works
+     if(!AC) return;
      try{
        if(!actx) actx = new AC();
        if(actx.state === 'suspended') actx.resume();
        var t = actx.currentTime;
-       blip(1180, .035, t, 'square', .07);  // the key going down
-       sweep(420, 1420, .24, t + .055, .10); // the line opening
-       ring(t + .44);
-       var rings = 1;
-       ringing = setInterval(function(){
-         if(++rings > 10){ clearInterval(ringing); ringing = 0; return; }
-         ring(actx.currentTime);
-       }, 1500);
-     }catch(e){}                            // a refused context is not a reason
-   }                                        // to swallow the call
-
-   // Resolve the line rather than swapping it. It is the only thing on the
-   // screen that changes meaning, and a hard swap reads as a glitch instead of
-   // an event. Under reduced motion it is simply set.
-   var GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\\\<>=+*-_:.';
-   function put(text){
-     clearInterval(scramble);
-     if(calm){ stEl.textContent = text; return; }
-     var frame = 0, total = 11;
-     function step(){
-       frame++;
-       var solid = Math.floor(text.length * (frame / total)), out = text.slice(0, solid);
-       for(var i = solid; i < text.length; i++)
-         out += text.charAt(i) === ' ' ? ' '
-              : GLYPHS.charAt(Math.floor(Math.random() * GLYPHS.length));
-       stEl.textContent = out;
-       if(frame >= total){ clearInterval(scramble); stEl.textContent = text; }
-     }
-     // Synchronously, before the interval's first tick. Waiting for it left the
-     // finished line on screen for a frame, so the effect played as resolved →
-     // scrambled → resolved: the answer, taken away, then given back.
-     step();
-     scramble = setInterval(step, 34);
+       blip(1180, .035, t, 'square', .07);          // the key going down
+       blip(523.25, .30, t + .05, 'sine', .075);    // and the line taken
+       blip(659.25, .30, t + .05, 'sine', .05);
+     }catch(e){}
    }
 
-   function open(){
-     t0 = Date.now();
-     conn.classList.add('on'); conn.setAttribute('aria-hidden', 'false');
-     put('opening the line'); elEl.textContent = '0.0s';
-     timers.push(setInterval(function(){
-       elEl.textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
-     }, 100));
-     timers.push(setTimeout(function(){
-       put(remote ? 'waiting for the cockpit' : 'reading the fleet');
-     }, 1200));
-     // Dead time turned into a decision. The cockpit being cold is the same
-     // condition the CALL key already degrades for when it is down outright —
-     // this is that fallback, offered late instead of up front.
-     if(remote) timers.push(setTimeout(function(){
-       put('the cockpit is slow to answer'); bail.classList.add('on');
-     }, 4500));
-   }
-
-   function close(){
-     conn.classList.remove('on'); conn.setAttribute('aria-hidden', 'true');
-     bail.classList.remove('on');
-     clearInterval(scramble);
-     if(ringing){ clearInterval(ringing); ringing = 0; }
-     timers.forEach(function(t){ clearTimeout(t); clearInterval(t); });
-     timers = []; armed = false;
-   }
-
-   // ── why the navigation waits ─────────────────────────────────────────────
-   // The cockpit answers /admin/trace in about fifty milliseconds. Letting the
-   // click through meant the document was replaced before this screen could be
-   // painted even once: the whole thing was built for a cold cockpit and the
-   // cockpit is not cold. Tapping CALL teleported you to someone else's
-   // `booting…` with no sound, no acknowledgement, and no reason to believe the
-   // tap had registered — so of course the next thing you do is tap it again.
-   //
-   // So the tap is taken and the navigation is issued a beat later. The beat is
-   // where the sound lives — it dies with this document, and a blip cut off
-   // after 50ms is not a sound, it is a click.
-   //
-   // 320ms and not longer, because the cockpit now answers ?call=1 with the
-   // same figure inside the same rings and starts connecting on arrival. This
-   // screen no longer has to stand in for the destination; it only has to hold
-   // long enough for the line-opening sweep to finish, and then get out of the
-   // way of a screen that continues it.
-   var HOLD = 320;
    call.addEventListener('click', function(e){
      e.preventDefault();
-     if(armed) return;                     // a second tap is not a second call
+     if(armed) return;              // a second tap is not a second call
      armed = true;
-     open(); seize();
-     timers.push(setTimeout(function(){ location.href = href; }, HOLD));
+     call.classList.add('opening');
+     seize();
+     setTimeout(function(){ location.href = href; }, 160);
    });
-   // Within the beat this genuinely stops the call, which is the only window in
-   // which anything could.
-   cancel.addEventListener('click', close);
 
-   // Coming back from the cockpit restores this page from the back-forward
-   // cache exactly as it was left: mid-call, overlay up, over a screen the
-   // operator has already finished with. Without this the only way out is a
-   // reload, which on a Home Screen tile is not an obvious gesture.
-   window.addEventListener('pageshow', function(e){ if(e.persisted) close(); });
+   // Back from the cockpit restores this page from the back-forward cache with
+   // the key still lit, on a screen the operator has finished with.
+   window.addEventListener('pageshow', function(ev){
+     if(ev.persisted){ armed = false; call.classList.remove('opening'); }
+   });
  })();
 </script>
 </body></html>"""
@@ -2563,17 +2394,12 @@ class Handler(BaseHTTPRequestHandler):
         toggle = ('<a class="on" href="/home?ui=board">unset as home</a>'
                   if simple_is_home
                   else '<a href="/home?ui=simple">set as home</a>')
-        # Where the call is going, said on the connecting screen. Naming it
-        # matters most in the case the screen exists for: a wait long enough to
-        # doubt is a wait you want to know the destination of.
-        dest = "local briefing" if href.startswith("/") else "cockpit · %s" % MACHINE
         page = (PHONE_PAGE
                 .replace("__MACHINE__", esc_html(MACHINE))
                 .replace("__KEYS__", "".join(keys))
                 .replace("__CALL_HREF__", esc_html(href))
                 .replace("__CALL_LABEL__", esc_html(label))
                 .replace("__CALL_SUB__", esc_html(sub))
-                .replace("__CALL_DEST__", esc_html(dest))
                 .replace("__HOME_TOGGLE__", toggle)
                 .replace("__N__", str(len(scan_now.get("services", [])))))
         return self._send(200, page, "text/html; charset=utf-8")
