@@ -281,7 +281,13 @@ try:
           and 'href="/home?ui=simple"' in board_default)
     check("LIVE-14 no placeholder survives to either surface",
           "__SIMPLE_" not in board_default and "__HOME_TOGGLE__" not in phone
-          and "__CALL_HREF__" not in phone and "__N__" not in phone)
+          and "__CALL_HREF__" not in phone and "__CALL_DEST__" not in phone
+          and "__N__" not in phone)
+    # The connecting screen is only ever seen when something is slow, which is
+    # the condition least likely to be exercised by hand before a release.
+    check("LIVE-17 the connecting screen ships with the simple screen",
+          'id="conn"' in phone and 'id="cst"' in phone and 'class="rings"' in phone
+          and "/trace-192.png" in phone)
 except Exception as e:
     check("LIVE-10..14 the two surfaces render", False, str(e))
 
