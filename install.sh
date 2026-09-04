@@ -180,11 +180,24 @@ TSBIN="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 if [ -x "$TSBIN" ]; then
   if "$TSBIN" serve status 2>/dev/null | grep -q ":$PORTAL_PORT"; then
     echo "  = tailscale serve :$PORTAL_PORT"
-  elif "$TSBIN" serve --bg --https="$PORTAL_PORT" "http://127.0.0.1:$PORTAL_PORT" >/dev/null 2>&1; then
+  elif SERVE_ERR="$("$TSBIN" serve --bg --https="$PORTAL_PORT" "http://127.0.0.1:$PORTAL_PORT" 2>&1)"; then
     echo "  + tailscale serve :$PORTAL_PORT"
   else
     echo "  ! tailscale serve :$PORTAL_PORT failed"
-    echo "    HTTPS must be enabled for the tailnet (admin console > DNS > HTTPS Certificates)."
+    # Report what Tailscale actually said. This used to discard stderr and
+    # print the HTTPS-certificates advice for EVERY failure, which sends an
+    # operator into the admin console to fix a setting that was never the
+    # problem. The most common cause on a fresh machine is simply not being
+    # signed in, and Tailscale says so in two words.
+    case "$SERVE_ERR" in
+      *"Logged out"*|*"logged out"*|*"NeedsLogin"*|*"not logged in"*)
+        echo "    Tailscale is installed but signed out. Open Tailscale.app and"
+        echo "    sign in, then re-run ./install.sh." ;;
+      *[Cc]ert*|*HTTPS*|*https*)
+        echo "    HTTPS must be enabled for the tailnet (admin console > DNS > HTTPS Certificates)." ;;
+      *)
+        [ -n "$SERVE_ERR" ] && echo "    tailscale: $SERVE_ERR" ;;
+    esac
     echo "    Until then the portal answers only on 127.0.0.1:$PORTAL_PORT."
   fi
 fi
