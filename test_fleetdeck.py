@@ -286,9 +286,14 @@ try:
     # The CALL key acknowledges the tap here and connects on the cockpit, which
     # draws the only connecting screen. Drawing a second one here is the
     # regression this guards: one action, one overlay.
+    # The path moved from ?call=1 to /admin/trace/local when ElevenLabs started
+    # refusing sessions on billing. Asserted against CALL_TARGET_PATH rather
+    # than a literal, so pointing the key back at the ElevenLabs screen is one
+    # edit in one file instead of two that can disagree.
     check("LIVE-17 the phone screen draws no connecting screen of its own",
           'id="conn"' not in phone and "class=\"rings\"" not in phone
-          and "a.call.opening" in phone and "?call=1" in phone)
+          and "a.call.opening" in phone
+          and P.CALL_TARGET_PATH.split("?")[0] in phone)
 except Exception as e:
     check("LIVE-10..14 the two surfaces render", False, str(e))
 

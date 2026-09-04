@@ -1647,12 +1647,25 @@ PHONE_APPS = ["chat", "messages", "cockpit", "graph", "terminal", "pm"]
 # If the cockpit is down the key falls back to /call — the local briefing, which
 # needs nothing but this machine. Degrading to something that still works beats
 # a dead button, and the label says which one you are getting.
-# `?call=1` asks the cockpit for the CALL SCREEN rather than the Trace console.
+# `?call=1` asked the cockpit for the CALL SCREEN rather than the Trace console.
 # Without it the key landed on an admin surface whose own call button was a
 # chip in the corner: a call screen handing off to a text UI containing a
 # second, smaller CALL. One intent, one screen.
+#
+# NOW /admin/trace/local, WHICH IS A DIFFERENT VOICE STACK. ElevenLabs began
+# refusing sessions on a billing problem (code 1002, "payment issue") and there
+# was no way to see it from here — the API key lacks `user_read`, so the quota
+# reads 401. A key that opens a call which dies on arrival is worse than one
+# that opens a call which works, so it points at the stack that costs nothing:
+# whisper.cpp for the ear, the operator's own cloned voice on :8890 for the
+# mouth, and the same tool gate behind both.
+#
+# The trade is push-to-talk instead of full duplex — whisper transcribes a
+# finished recording, so there is nothing to hear until you stop speaking.
+# ?call=1 still works and is unchanged; it is one edit back if the account is
+# topped up and full duplex is wanted again.
 CALL_TARGET_ID = "cockpit"
-CALL_TARGET_PATH = "/admin/trace?call=1"
+CALL_TARGET_PATH = "/admin/trace/local"
 
 
 def call_destination(by_id):
