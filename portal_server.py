@@ -579,19 +579,19 @@ PAGE = """<!doctype html>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="__MACHINE__">
-<meta name="theme-color" content="#05070a">
+<meta name="theme-color" content="#0f1216">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>__MACHINE__ // portal</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2305070a'/><path d='M6 12h6l4 10 4-16 4 12h2' stroke='%234fe3c1' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230f1216'/><path d='M6 12h6l4 10 4-16 4 12h2' stroke='%2363b8b0' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <style>
   :root{
-    --bg:#05070a; --panel:#0a0e13; --line:#18222b;
-    --ink:#8fa3b0; --bright:#d6e4ec; --dim:#4a5b68;
-    --on:#4fe3c1; --off:#2b3a45; --warn:#d9a441;
+    --bg:#0f1216; --panel:#161b21; --line:#262e37;
+    --ink:#93a1ad; --bright:#dde5ec; --dim:#5a6772;
+    --on:#63b8b0; --off:#2c353e; --warn:#f7b552;
     /* idle == a scheduled job resting between runs. Deliberately its own
        colour: not the green of "serving", not the grey of "dead". */
-    --idle:#3f6d7d; --bad:#e26a6a;
+    --idle:#6b7f93; --bad:#d9483f;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--bg);color:var(--ink)}
@@ -613,7 +613,7 @@ PAGE = """<!doctype html>
   header{
     position:sticky;top:0;z-index:3;margin:0 -16px 22px;padding:14px 16px;
     padding-top:calc(14px + env(safe-area-inset-top));
-    background:rgba(5,7,10,.93);backdrop-filter:blur(8px);
+    background:rgba(15,18,22,.93);backdrop-filter:blur(8px);
     border-bottom:1px solid var(--line);
     display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
   }
@@ -661,10 +661,10 @@ PAGE = """<!doctype html>
   #simple:active,#simple:hover{border-color:var(--on);color:var(--on)}
   /* Lit = the simple screen is this device's home. Tapping it then hands `/`
      back to the board, without leaving the board you are already on. */
-  #simple.on{border-color:var(--on);color:var(--on);background:rgba(79,227,193,.09)}
+  #simple.on{border-color:var(--on);color:var(--on);background:rgba(99,184,176,.09)}
   #sheet{
     position:fixed;inset:0;z-index:20;display:none;overflow:auto;
-    background:rgba(5,7,10,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    background:rgba(15,18,22,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
     padding:24px 16px calc(32px + env(safe-area-inset-bottom));
   }
   #sheet.on{display:block}
@@ -744,17 +744,17 @@ PAGE = """<!doctype html>
   .tile.down .ico,.tile.host .ico{color:var(--off)}
   .lamp{width:6px;height:6px;border-radius:50%;flex:none;margin-top:3px;
     background:var(--off);box-shadow:none}
-  .tile.up .lamp{background:var(--on);box-shadow:0 0 0 3px rgba(79,227,193,.14)}
+  .tile.up .lamp{background:var(--on);box-shadow:0 0 0 3px rgba(99,184,176,.14)}
   .tile.host .lamp{background:var(--warn);box-shadow:none}
   .name{color:var(--bright);font-weight:600;letter-spacing:.02em;line-height:1.25}
   .blurb{color:var(--dim);font-size:11px;line-height:1.35;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .foot{display:flex;justify-content:space-between;align-items:center;
     margin-top:auto;padding-top:8px;font-size:10.5px;color:var(--dim);letter-spacing:.06em}
-  .badge{color:var(--warn);border:1px solid rgba(217,164,65,.3);
+  .badge{color:var(--warn);border:1px solid rgba(247,181,82,.3);
     border-radius:2px;padding:0 4px;font-size:9.5px;letter-spacing:.08em}
   .badge.api{color:var(--dim);border-color:var(--line)}
-  .badge.bad{color:var(--bad);border-color:rgba(226,106,106,.35)}
+  .badge.bad{color:var(--bad);border-color:rgba(217,72,63,.35)}
   /* ── agents ──────────────────────────────────────────────────────────────
      A scheduled job that is not running right now is HEALTHY, so its lamp is
      calm, not dark. Only a non-zero exit earns red, and only an unloaded plist
@@ -765,13 +765,13 @@ PAGE = """<!doctype html>
   /* An absent timestamp is stated, not hidden — but quietly, because on a
      board where most jobs are silent it is the common case, not a fault. */
   .tile.agent .when.none{opacity:.45}
-  .tile.agent.run .lamp{background:var(--on);box-shadow:0 0 0 3px rgba(79,227,193,.14)}
+  .tile.agent.run .lamp{background:var(--on);box-shadow:0 0 0 3px rgba(99,184,176,.14)}
   .tile.agent.run .ico{color:var(--on)}
   .tile.agent.ok .lamp{background:var(--idle)}
   .tile.agent.off{opacity:.55}
   .tile.agent.off .lamp{background:var(--warn)}
-  .tile.agent.fail{border-color:rgba(226,106,106,.4)}
-  .tile.agent.fail .lamp{background:var(--bad);box-shadow:0 0 0 3px rgba(226,106,106,.14)}
+  .tile.agent.fail{border-color:rgba(217,72,63,.4)}
+  .tile.agent.fail .lamp{background:var(--bad);box-shadow:0 0 0 3px rgba(217,72,63,.14)}
   .tile.agent.fail .ico,.tile.agent.fail .name{color:var(--bad)}
   .sched{color:var(--ink);font-size:10.5px;letter-spacing:.04em}
   .acts{display:flex;gap:6px;margin-top:8px}
@@ -1333,7 +1333,12 @@ def agent_report(name):
 
 OLLAMA = os.environ.get("WB_OLLAMA", "http://127.0.0.1:11434/api/generate")
 ROUTER_MODEL = os.environ.get("WB_ROUTER_MODEL", "qwen3.8:27b-mlx")
-OPERATOR_PHONE = os.environ.get("WB_OPERATOR_PHONE", "+16465490064")
+# Upstream shipped the author's own number as the default here, which meant a
+# fresh clone texted a stranger on its first notify. Read it from config.json
+# instead and default to EMPTY: this is operator data, not code, and an
+# unconfigured notify channel must stay silent rather than pick a recipient.
+OPERATOR_PHONE = (os.environ.get("WB_OPERATOR_PHONE")
+                  or CONF.get("operator", {}).get("phone", "")).strip()
 # The Homebrew binary, NOT the ~/bin wrapper. TCC grants Automation per exact
 # binary path, and the grant lives on /opt/homebrew/Cellar/imsg/.../imsg. The
 # wrapper runs under zsh, which a launchd-spawned server does not inherit a
@@ -1508,6 +1513,10 @@ def route_task(text):
 
 def send_text(body_text):
     """Text the operator. One recipient, fixed — this is a notify channel, not a sender."""
+    if not OPERATOR_PHONE:
+        # No recipient configured. Refusing beats falling back to any default:
+        # the only wrong recipient a notify channel can have is someone else's.
+        return False, "no operator phone configured (set operator.phone in config.json)"
     if not os.path.exists(IMSG):
         return False, "imsg wrapper not found"
     try:
@@ -1633,7 +1642,12 @@ def home_pref(cookie_header):
 # unclickable, labelled `down`. Hiding it would make a dead service and an
 # unregistered one look identical from the one screen most likely to be opened
 # when something is wrong.
-PHONE_APPS = ["chat", "messages", "cockpit", "graph", "terminal", "pm"]
+# The six keys on /phone, resolved against the same registry the board uses.
+# Upstream hardcoded the author's own six. That is operator data — a fresh
+# clone rendered six "not registered" stubs — so this fork reads it from
+# config.json and falls back to upstream's list only when unset.
+PHONE_APPS = (CONF.get("phone", {}).get("apps")
+              or ["chat", "messages", "cockpit", "graph", "terminal", "pm"])
 
 # Where the CALL key goes. Trace's conversational surface lives in the cockpit
 # app, because that is where the ElevenLabs SDK, the admin session and the tool
@@ -1690,60 +1704,60 @@ CALL_PAGE = """<!doctype html>
 <style>
  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
  html,body{height:100%}
- body{background:#05070a;color:#d6e4ec;font:14px/1.55 ui-monospace,"SF Mono",Menlo,monospace;
+ body{background:#0f1216;color:#dde5ec;font:14px/1.55 ui-monospace,"SF Mono",Menlo,monospace;
    display:flex;flex-direction:column;
    padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
  header{display:flex;align-items:center;gap:10px;padding-bottom:10px}
- header b{color:#4fe3c1;font-weight:400;letter-spacing:.2em;text-transform:uppercase;font-size:13px}
- header .sub{color:#4a5b68;font-size:11px;letter-spacing:.1em}
- header a{margin-left:auto;color:#4a5b68;text-decoration:none;font-size:11px;letter-spacing:.14em}
+ header b{color:#63b8b0;font-weight:400;letter-spacing:.2em;text-transform:uppercase;font-size:13px}
+ header .sub{color:#5a6772;font-size:11px;letter-spacing:.1em}
+ header a{margin-left:auto;color:#5a6772;text-decoration:none;font-size:11px;letter-spacing:.14em}
  .hide{display:none}
 
- .dock{border:2px solid #1d5f52;border-radius:14px;background:#0b1a17;padding:11px;
+ .dock{border:2px solid #2f5a56;border-radius:14px;background:#0b1a17;padding:11px;
    display:flex;flex-direction:column;gap:9px;margin-bottom:11px}
  .dock.min{padding:7px 11px;flex-direction:row;align-items:center;gap:9px}
  .dock.min #st,.dock.min .ask{display:none}
  .row{display:flex;align-items:center;gap:8px}
  button{font:inherit;cursor:pointer}
- #go{flex:1;min-height:50px;border-radius:10px;border:2px solid #1d5f52;background:#0d221d;
-   color:#4fe3c1;font-size:15px;letter-spacing:.2em;text-transform:uppercase}
- #go:active{border-color:#4fe3c1}
+ #go{flex:1;min-height:50px;border-radius:10px;border:2px solid #2f5a56;background:#0d221d;
+   color:#63b8b0;font-size:15px;letter-spacing:.2em;text-transform:uppercase}
+ #go:active{border-color:#63b8b0}
  #go[disabled]{opacity:.45}
  .dock.min #go{min-height:32px;font-size:12px;flex:0 0 88px}
- .chip{border:1px solid #1d5f52;background:transparent;color:#4fe3c1;border-radius:8px;
+ .chip{border:1px solid #2f5a56;background:transparent;color:#63b8b0;border-radius:8px;
    font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:7px 10px}
- .chip:active{background:#10241f}
+ .chip:active{background:#14262a}
  .chip[disabled]{opacity:.4}
  .chip.rec{background:#3a1220;border-color:#a33;color:#ff8fa3}
- #st{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#4a5b68;
+ #st{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5a6772;
    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
- .lamp{width:9px;height:9px;border-radius:50%;background:#2b3a45;flex:0 0 auto}
- .lamp.on{background:#4fe3c1;animation:p 1.4s ease-in-out infinite}
+ .lamp{width:9px;height:9px;border-radius:50%;background:#2c353e;flex:0 0 auto}
+ .lamp.on{background:#63b8b0;animation:p 1.4s ease-in-out infinite}
  @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
  .ask{display:flex;gap:7px}
- .ask input{flex:1;background:#05070a;border:1px solid #1d5f52;border-radius:8px;
-   color:#d6e4ec;font:inherit;font-size:13px;padding:9px 10px;min-width:0}
- .ask input::placeholder{color:#2b3a45}
+ .ask input{flex:1;background:#0f1216;border:1px solid #2f5a56;border-radius:8px;
+   color:#dde5ec;font:inherit;font-size:13px;padding:9px 10px;min-width:0}
+ .ask input::placeholder{color:#2c353e}
 
  .tr{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:2px 0 10px}
- .msg{border-left:2px solid #1d5f52;padding:5px 0 5px 11px}
- .msg .who{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#4fe3c1}
- .msg .when{color:#2b3a45;margin-left:7px}
- .msg p{color:#8fa3b0;margin-top:3px;white-space:pre-wrap}
- .msg.you{border-left-color:#2b3a45}
- .msg.you .who{color:#4a5b68}
+ .msg{border-left:2px solid #2f5a56;padding:5px 0 5px 11px}
+ .msg .who{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#63b8b0}
+ .msg .when{color:#2c353e;margin-left:7px}
+ .msg p{color:#93a1ad;margin-top:3px;white-space:pre-wrap}
+ .msg.you{border-left-color:#2c353e}
+ .msg.you .who{color:#5a6772}
  .msg .act{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}
- .empty{color:#2b3a45;font-size:12px;text-align:center;padding:22px 0}
+ .empty{color:#2c353e;font-size:12px;text-align:center;padding:22px 0}
 
- h2{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#4a5b68;margin:4px 0 7px}
+ h2{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#5a6772;margin:4px 0 7px}
  .fleet{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:6px}
- .ag{border:1px solid #18222b;background:#0a0e13;color:#d6e4ec;border-radius:8px;
+ .ag{border:1px solid #262e37;background:#161b21;color:#dde5ec;border-radius:8px;
    font-size:12px;padding:6px 10px;display:flex;align-items:center;gap:6px}
- .ag:active{border-color:#4fe3c1}
+ .ag:active{border-color:#63b8b0}
  .ag[disabled]{opacity:.4}
- .ag i{font-style:normal;width:6px;height:6px;border-radius:50%;background:#4fe3c1}
- .ag.q i{background:#2b3a45}
- .ag.nd{border-style:dashed;color:#8fa3b0}
+ .ag i{font-style:normal;width:6px;height:6px;border-radius:50%;background:#63b8b0}
+ .ag.q i{background:#2c353e}
+ .ag.nd{border-style:dashed;color:#93a1ad}
 </style></head><body>
  <header><span class="lamp" id="lamp"></span><b>Trace</b>
    <span class="sub" id="who">the fleet steward</span><a href="/phone">&lsaquo; home</a></header>
@@ -1990,8 +2004,10 @@ CALL_PAGE = """<!doctype html>
 
 
 # The registry name is what the board shows; a few read better big and short.
+# Overridable from config.json ("phone": {"labels": {...}}) for the same reason.
 PHONE_LABELS = {"chat": "FLEET", "cockpit": "COCKPIT", "graph": "GRAPH",
                 "pm": "BOARD", "messages": "MESSAGES", "terminal": "TERMINAL"}
+PHONE_LABELS.update(CONF.get("phone", {}).get("labels", {}))
 
 PHONE_PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -2002,52 +2018,52 @@ PHONE_PAGE = """<!doctype html>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/phone.webmanifest">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2305070a'/><path d='M6 12h6l4 10 4-16 4 12h2' stroke='%234fe3c1' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230f1216'/><path d='M6 12h6l4 10 4-16 4 12h2' stroke='%2363b8b0' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <style>
  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
  html,body{height:100%}
- body{background:#05070a;color:#d6e4ec;
+ body{background:#0f1216;color:#dde5ec;
    font:16px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
    display:flex;flex-direction:column;
    padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom))}
  /* The clock is the point of the screen, so it gets the room. */
  .clock{text-align:center;padding:22px 0 4px}
  .time{font-size:clamp(56px,19vw,104px);line-height:1;letter-spacing:.02em;
-   color:#4fe3c1;font-weight:400;font-variant-numeric:tabular-nums}
- .date{margin-top:10px;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#4a5b68}
+   color:#63b8b0;font-weight:400;font-variant-numeric:tabular-nums}
+ .date{margin-top:10px;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#5a6772}
  .grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;
    align-content:center;padding:18px 0}
  a.key,span.key{display:flex;flex-direction:column;align-items:center;justify-content:center;
-   gap:8px;min-height:104px;border:2px solid #18222b;border-radius:14px;
-   background:#0a0e13;color:#d6e4ec;text-decoration:none;
+   gap:8px;min-height:104px;border:2px solid #262e37;border-radius:14px;
+   background:#161b21;color:#dde5ec;text-decoration:none;
    font-size:15px;letter-spacing:.14em;text-transform:uppercase}
- a.key:active{border-color:#4fe3c1;background:#101820}
+ a.key:active{border-color:#63b8b0;background:#1b2229}
  span.key{opacity:.34}
- .key svg{width:30px;height:30px;stroke:#4fe3c1;stroke-width:1.6;fill:none;
+ .key svg{width:30px;height:30px;stroke:#63b8b0;stroke-width:1.6;fill:none;
    stroke-linecap:round;stroke-linejoin:round}
- span.key svg{stroke:#4a5b68}
- .st{font-size:10px;letter-spacing:.16em;color:#4a5b68}
+ span.key svg{stroke:#5a6772}
+ .st{font-size:10px;letter-spacing:.16em;color:#5a6772}
  /* The call key gets the width and the only colour on the screen, because it
     is the one button that does something rather than going somewhere. */
  a.call{display:flex;align-items:center;justify-content:center;gap:11px;
-   min-height:66px;border:2px solid #1d5f52;border-radius:14px;background:#0b1a17;
-   color:#4fe3c1;text-decoration:none;font-size:16px;letter-spacing:.2em;
+   min-height:66px;border:2px solid #2f5a56;border-radius:14px;background:#0b1a17;
+   color:#63b8b0;text-decoration:none;font-size:16px;letter-spacing:.2em;
    text-transform:uppercase;margin-bottom:12px}
- a.call:active{border-color:#4fe3c1;background:#10241f}
+ a.call:active{border-color:#63b8b0;background:#14262a}
  a.call em{font-style:normal;font-size:9.5px;letter-spacing:.14em;color:#2f7d6d;
    text-transform:uppercase}
  a.call .face{width:34px;height:34px;border-radius:50%;object-fit:cover;
-   border:2px solid rgba(79,227,193,.45);
+   border:2px solid rgba(99,184,176,.45);
    animation:tbreathe 2.8s ease-in-out infinite}
- @keyframes tbreathe{0%,100%{box-shadow:0 0 10px rgba(79,227,193,.20)}
-   50%{box-shadow:0 0 16px rgba(79,227,193,.40)}}
- .foot{text-align:center;font-size:11px;letter-spacing:.14em;color:#2b3a45;padding-top:4px}
- .foot a{color:#4a5b68;text-decoration:none}
- .foot a:active{color:#4fe3c1}
+ @keyframes tbreathe{0%,100%{box-shadow:0 0 10px rgba(99,184,176,.20)}
+   50%{box-shadow:0 0 16px rgba(99,184,176,.40)}}
+ .foot{text-align:center;font-size:11px;letter-spacing:.14em;color:#2c353e;padding-top:4px}
+ .foot a{color:#5a6772;text-decoration:none}
+ .foot a:active{color:#63b8b0}
  /* Lit when this screen already owns `/`, so the sentence reads as a state
     before it reads as a button. */
- .foot a.on{color:#4fe3c1}
- .foot .sep{padding:0 8px;color:#18222b}
+ .foot a.on{color:#63b8b0}
+ .foot .sep{padding:0 8px;color:#262e37}
 
  /* Tapping CALL acknowledges here and connects THERE. The cockpit answers
     ?call=1 with the connecting screen — the same figure, the same rings — so
@@ -2055,7 +2071,7 @@ PHONE_PAGE = """<!doctype html>
     to sit through both. This screen's job is now only to say the tap landed:
     the key lights, the sound plays, and the surface that is actually
     connecting is the one that shows connecting. */
- a.call.opening{border-color:#4fe3c1;background:#10241f}
+ a.call.opening{border-color:#63b8b0;background:#14262a}
  a.call.opening span{opacity:.55}
 </style></head><body>
  <div class="clock"><div class="time" id="t">--:--</div><div class="date" id="d">&nbsp;</div></div>
@@ -2140,13 +2156,13 @@ DENIED_PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="dark"><title>%(machine)s // off-tailnet</title>
 <style>
- html,body{margin:0;background:#05070a;color:#8fa3b0;
+ html,body{margin:0;background:#0f1216;color:#93a1ad;
    font:13px/1.6 ui-monospace,"SF Mono",Menlo,monospace}
  main{max-width:34rem;margin:0 auto;padding:14vh 22px}
- h1{color:#d9a441;font-size:12px;letter-spacing:.22em;text-transform:uppercase;margin:0 0 18px}
- p{margin:0 0 14px}b{color:#d6e4ec;font-weight:600}
- code{color:#4fe3c1}
- .box{border:1px solid #18222b;border-left:2px solid #d9a441;border-radius:3px;padding:14px}
+ h1{color:#f7b552;font-size:12px;letter-spacing:.22em;text-transform:uppercase;margin:0 0 18px}
+ p{margin:0 0 14px}b{color:#dde5ec;font-weight:600}
+ code{color:#63b8b0}
+ .box{border:1px solid #262e37;border-left:2px solid #f7b552;border-radius:3px;padding:14px}
 </style></head><body><main>
 <h1>off tailnet</h1>
 <div class="box">
@@ -2259,7 +2275,7 @@ class Handler(BaseHTTPRequestHandler):
                 "start_url": "/phone", "scope": "/",
                 "display": "fullscreen",
                 "display_override": ["fullscreen", "standalone", "minimal-ui"],
-                "background_color": "#05070a", "theme_color": "#05070a",
+                "background_color": "#0f1216", "theme_color": "#0f1216",
                 "orientation": "portrait",
                 "icons": [
                     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
@@ -2308,8 +2324,8 @@ class Handler(BaseHTTPRequestHandler):
                 # lands on minimal-ui rather than a browser tab.
                 "display": "fullscreen",
                 "display_override": ["fullscreen", "standalone", "minimal-ui"],
-                "background_color": "#05070a",
-                "theme_color": "#05070a",
+                "background_color": "#0f1216",
+                "theme_color": "#0f1216",
                 "orientation": "portrait",
                 "icons": [
                     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
