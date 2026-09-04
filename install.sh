@@ -37,7 +37,30 @@ wanted() {
 BIN="$HOME/bin"
 LA="$HOME/Library/LaunchAgents"
 UID_N="$(id -u)"
-PY="$(command -v python3 || echo /usr/bin/python3)"
+# The python3 the plists will point at, for the life of those jobs.
+#
+# `command -v python3` is not good enough. A Homebrew python earlier on PATH is
+# the common case and the fragile one: this repo already documents that a `brew
+# upgrade python` silently voided a TCC grant once, which is why chat_server.py
+# is shebanged /usr/bin/python3 — "Apple's path never moves". install.sh picking
+# the Homebrew one anyway contradicts that lesson in the same repo.
+#
+# It gets worse than drift. A python@3.14 pulled in as a BUILD dependency of
+# something else can be left behind broken (on macOS 12 its post-install fails
+# and the interpreter is SIGKILLed on every run). Rendering that path into the
+# plists gets two agents that crash-loop instantly, and the operator sees a bug
+# in this tool rather than a bad interpreter.
+#
+# So: prefer Apple's, and whatever we end up with, prove it actually runs.
+for cand in /usr/bin/python3 "$(command -v python3 || true)"; do
+  [ -x "$cand" ] || continue
+  "$cand" -c 'import json,sys' >/dev/null 2>&1 || continue
+  PY="$cand"; break
+done
+if [ -z "${PY:-}" ]; then
+  echo "  ✗ no working python3 found (tried /usr/bin/python3 and PATH)"
+  exit 1
+fi
 
 echo "▩ fleetdeck $(cat "$HERE/VERSION" 2>/dev/null || echo '?') — installing from $HERE"
 echo
