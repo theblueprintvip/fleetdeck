@@ -1,16 +1,21 @@
-# fleetdeck — `1.1.0`
+# fleetdeck — `1.2.0`
 
 **Your Mac's servers and launchd agents, as one launcher board on your phone.**
-Plus the tmux fleet as a chat. Tailnet-only, stdlib Python, no build step.
+Plus the tmux fleet as a chat, and a direct line to the fleet steward. Tailnet-only,
+stdlib Python, no build step.
 
 Two browser surfaces for one Mac, reachable from a phone over Tailscale:
 
 | surface | port | what it is |
 |---|---|---|
-| **portal** | 8790 | One tile per local **server** and per **launchd agent**. Installs to the home screen as a PWA. |
+| **portal** | 8790 | One tile per local **server** and per **launchd agent** — the board (`/board`) or the six-key **simple screen** (`/phone`), whichever this device chose. Installs to the home screen as a PWA. |
 | **chat** | 8783 | The whole **tmux fleet as a Messages-style thread list**. Tap a session, get a live writable terminal. |
 | **skin** | per app | Optional. Fronts an app you *cannot* edit — a container — so it installs with your icon and palette. Idle until you configure one. |
 | **adopt** | 8793 | Paste a repo URL, read the plan, press Adopt. Loopback only by default — it installs software. |
+
+New in 1.2.0: the simple screen (`/phone`), a per-device home toggle, and a
+CALL key that reaches Trace's live voice surface in the cockpit app. Details in
+[Two front doors](#two-front-doors) below.
 
 Plus one internal: **:8784**, a loopback-only `ttyd` that is the chat's terminal
 backend. It is never reachable directly — `chat_server.py` proxies it under `/t`.
@@ -103,6 +108,45 @@ A service bound to `127.0.0.1` with no serve mapping gets a **`host only`**
 badge, not a dead link. A service that answers HTTP but has no browser UI is
 marked **`api`** and is deliberately **not clickable**, so a tap can never land
 on a 404.
+
+---
+
+## Two front doors
+
+The board shows everything on the machine, which is what a board is for.
+`/phone` is the opposite surface: a clock and six keys sized for a thumb, for
+the times you already know where you are going.
+
+| path | always renders |
+|---|---|
+| `/board` | the board |
+| `/phone` | the simple screen |
+| `/` | whichever one this device chose |
+
+The **⠿ button in the board header** switches between them, and the
+**`set as home`** link in the simple screen's footer does the same from the
+other side. Either way it writes one cookie, `fd_home`, and lands you on the
+surface you picked.
+
+The choice is per **device**, not per machine — the board belongs on the desk
+where there is room for forty tiles, the simple screen belongs on the phone, and
+a setting in `config.json` would force one answer onto both. It is a cookie for
+the same reason it is a redirect and not a script: the simple screen is
+server-rendered and carries almost no JS, and a preference that needs JS to
+stick is a preference that fails on the surface most likely to be opened when
+something is already wrong.
+
+`/` is the installed tile's `start_url`, so this is what "change to the simple
+UI" actually changes. The canonical paths never follow the cookie — that is
+what keeps a route back from a phone that has chosen the simple screen. Any
+value that is not `simple` — absent, junk, or invented by a newer build — means
+the board, because the board is the surface that can reach everything.
+
+Which six keys appear is one line, `PHONE_APPS`, resolved against the same
+registry the board uses. A registered service that is down still gets its key,
+dimmed and labelled: hiding it would make a dead service and an unregistered one
+look identical from the one screen most likely to be opened when something is
+wrong.
 
 ---
 
@@ -314,6 +358,12 @@ There is no password anywhere in the request path. What protects these surfaces:
   server's proxy.
 
 `FLEETDECK_OPEN=1` lifts the portal's IP check. Don't, except to debug.
+
+`/home?ui=` is a GET that writes a cookie — a state change behind no method
+guard, on a surface with no auth. Consistent with everything else here (a
+tailnet visitor can already open any tile), and worth naming rather than
+letting a reviewer discover it: this is the shape CSRF advice usually flags,
+accepted here for the same reason the rest of the surface has no login.
 
 **This is not production-grade.** It is tailnet-gated single-operator tooling.
 Before putting it in front of anyone else you want real auth (Cloudflare Access
