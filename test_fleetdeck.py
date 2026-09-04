@@ -165,6 +165,33 @@ check("UNIT-11 an unparseable plist says so rather than rendering blank",
       t["unreadable"] and t["program"] == "plist will not parse",
       f"program={t['program']!r} unreadable={t['unreadable']!r}")
 
+# ── the shipped templates ────────────────────────────────────────────────────
+# UNIT-11 proves the portal REPORTS an unparseable plist. It does not prove this
+# repo ships parseable ones, and those are different claims: fleetdeck-skin's
+# template carried `tailscale serve --bg --https=PORT` inside an XML comment,
+# XML forbids a double hyphen there, and the agent's own tile rendered "plist
+# will not parse" on a clean install. `plutil -lint` calls that file OK, so the
+# obvious check would have missed it — plistlib is the parser that matters here
+# because plistlib is what the portal reads plists with.
+_tmpl_dir = os.path.join(HERE, "launchagents")
+_subs = {"__ROOT__": HERE, "__HOME__": os.path.expanduser("~"),
+         "__PYTHON__": sys.executable, "__PREFIX__": "com.acme",
+         "__PORTAL_PORT__": "8790", "__CHAT_PORT__": "8783",
+         "__TTYD_PORT__": "8784", "__ADOPT_PORT__": "8793"}
+for _fn in sorted(os.listdir(_tmpl_dir)):
+    if not _fn.endswith(".plist.tmpl"):
+        continue
+    _raw = open(os.path.join(_tmpl_dir, _fn)).read()
+    for _k, _v in _subs.items():
+        _raw = _raw.replace(_k, _v)
+    try:
+        plistlib.loads(_raw.encode())
+        _ok, _why = True, ""
+    except Exception as _e:
+        _ok, _why = False, f"{type(_e).__name__}: {_e}"
+    check(f"TMPL {_fn} renders to a plist plistlib can read", _ok, _why)
+
+
 # ── curation ─────────────────────────────────────────────────────────────────
 
 a = agents_from({"com.apple.somedaemon": BASIC, "com.acme.mine": BASIC},
