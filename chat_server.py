@@ -154,8 +154,8 @@ def ttyd_argv():
     argv += [
         "-t", "fontSize=13",
         "-t", "fontFamily=SFMono-Regular,Menlo,monospace",
-        "-t", 'theme={"background":"#07090c","foreground":"#c9d8e4",'
-              '"cursor":"#28e0d0","selectionBackground":"#123b40"}',
+        "-t", 'theme={"background":"#0f1216","foreground":"#dde5ec",'
+              '"cursor":"#63b8b0","selectionBackground":"#1e3b3a"}',
         "-t", "cursorBlink=true",
         "-t", "scrollback=10000",
         "-t", "macOptionIsMeta=true",
@@ -338,7 +338,7 @@ def snapshot(open_name=None):
         hue = (hued.index(name) / len(hued)) if name in hued else None
         rows.append({
             "name": name,
-            "color": hexcolor(hue) if hue is not None else "#5d7183",
+            "color": hexcolor(hue) if hue is not None else "#5a6772",
             "title": title if title and title != name else "",
             "cmd": cmd,
             "path": path.replace(HOME, "~"),
@@ -377,54 +377,54 @@ PAGE = r"""<!doctype html><html><head>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
-:root{--bg:#07090c;--panel:#0c1015;--line:#18222c;--dim:#5d7183;
-      --txt:#c9d8e4;--neon:#28e0d0;--mag:#ff4ecd}
+:root{--bg:#0f1216;--panel:#161b21;--line:#262e37;--dim:#5a6772;
+      --txt:#dde5ec;--neon:#63b8b0;--mag:#f7b552}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;
      height:100dvh;display:flex;overflow:hidden}
 #list{width:320px;flex:none;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel)}
 #head{padding:11px 13px;border-bottom:1px solid var(--line);color:var(--neon);letter-spacing:.13em;font-size:11px;
       display:flex;justify-content:space-between;align-items:center;gap:8px}
-#head b{font-weight:400;color:#33414e}
-#beta{color:#ffcf4e;border:1px solid #4a3d12;border-radius:5px;padding:1px 4px;font-size:9px;letter-spacing:.1em}
+#head b{font-weight:400;color:#3a4550}
+#beta{color:#f7b552;border:1px solid #5a4718;border-radius:5px;padding:1px 4px;font-size:9px;letter-spacing:.1em}
 #head .hb{display:flex;gap:6px;align-items:center}
-.btn{cursor:pointer;color:#3d4d5c;border:1px solid #223140;border-radius:7px;padding:3px 7px;
+.btn{cursor:pointer;color:#5a6772;border:1px solid #2c353e;border-radius:7px;padding:3px 7px;
      font-size:10px;letter-spacing:.1em;flex:none;user-select:none}
-.btn:hover{color:var(--neon);border-color:#2b4353}
-.btn.peek{color:#ffcf4e;border-color:#4a3d12}
+.btn:hover{color:var(--neon);border-color:#3a4a52}
+.btn.peek{color:#f7b552;border-color:#5a4718}
 #rows{overflow-y:auto;flex:1}
-.r{padding:10px 13px;border-bottom:1px solid #10171e;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
-.r:hover{background:#111820}
-.r.on{background:#0f1c22}
-.r.on .av{box-shadow:0 0 0 2px #07090c,0 0 0 3px currentColor}
+.r{padding:10px 13px;border-bottom:1px solid #1b2229;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.r:hover{background:#1b2229}
+.r.on{background:#1c2630}
+.r.on .av{box-shadow:0 0 0 2px #0f1216,0 0 0 3px currentColor}
 .av{width:26px;height:26px;flex:none;border-radius:8px;margin-top:2px;display:grid;place-items:center;
     font-size:11px;font-weight:700;background:currentColor;color:inherit;position:relative}
-.av i{color:#04211f;font-style:normal}
+.av i{color:#0f1216;font-style:normal}
 .av .pip{position:absolute;right:-3px;top:-3px;width:9px;height:9px;border-radius:50%;
          background:var(--mag);border:2px solid var(--panel);display:none}
 .r.unread .av .pip{display:block}
 .b{min-width:0;flex:1}
 .n{color:#e6f1f8;font-size:12.5px;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .r.unread .n{color:#fff}
-.t{color:#3d4d5c;font-size:10px;float:right;margin-left:8px;font-weight:400;letter-spacing:0}
+.t{color:#5a6772;font-size:10px;float:right;margin-left:8px;font-weight:400;letter-spacing:0}
 .sub{font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p{color:var(--dim);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.8}
-.live{display:inline-block;width:5px;height:5px;border-radius:50%;background:#2ee06a;margin-right:5px;
+.live{display:inline-block;width:5px;height:5px;border-radius:50%;background:#63b8b0;margin-right:5px;
       vertical-align:middle;animation:pulse 1.6s infinite}
 @keyframes pulse{50%{opacity:.25}}
 #pane{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
 #title{padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel);
        font-size:12px;letter-spacing:.09em;display:flex;gap:10px;align-items:center}
 #who{color:#e6f1f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#meta{color:#33414e;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+#meta{color:#3a4550;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
 #back{display:none;color:var(--mag);cursor:pointer;font-size:17px;line-height:1}
-#ro{display:none;color:#ffcf4e;font-size:10px;letter-spacing:.1em;border:1px solid #4a3d12;
+#ro{display:none;color:#f7b552;font-size:10px;letter-spacing:.1em;border:1px solid #5a4718;
     border-radius:7px;padding:3px 7px;flex:none}
 body.peek #ro{display:block}
 #frame{flex:1;position:relative;min-height:0}
 #frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
-.empty{position:absolute;inset:0;display:grid;place-items:center;color:#2b3742;font-size:12px;text-align:center;padding:20px}
-#hue{height:2px;background:#18222c;flex:none}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:#2c353e;font-size:12px;text-align:center;padding:20px}
+#hue{height:2px;background:#262e37;flex:none}
 @media(max-width:720px){
   #list{width:100%}
   body.thread #list{display:none} body.thread #pane{display:flex} body:not(.thread) #pane{display:none}
@@ -514,7 +514,7 @@ function open_(n){
 function close_(){
   cur=null; document.body.classList.remove('thread');
   $('who').textContent='select a session'; $('meta').textContent='';
-  $('hue').style.background='#18222c'; mount(); sig=''; paint();
+  $('hue').style.background='#262e37'; mount(); sig=''; paint();
 }
 
 async function load(){
@@ -546,7 +546,7 @@ $('new').onclick=()=>{
   const n=(prompt('new session name')||'').trim();
   if(!n)return;
   if(!/^[A-Za-z0-9_.-]{1,32}$/.test(n)){alert('letters, digits, . _ - only');return;}
-  rows.unshift({name:n,color:'#28e0d0',title:'',cmd:'',path:'',preview:'new',
+  rows.unshift({name:n,color:'#63b8b0',title:'',cmd:'',path:'',preview:'new',
                 changed:Math.floor(Date.now()/1000),active:true,unread:false,clients:0,size:''});
   open_(n);
 };
