@@ -1,16 +1,21 @@
-# fleetdeck — `1.1.0`
+# fleetdeck — `1.2.0`
 
 **Your Mac's servers and launchd agents, as one launcher board on your phone.**
-Plus the tmux fleet as a chat. Tailnet-only, stdlib Python, no build step.
+Plus the tmux fleet as a chat, and a direct line to the fleet steward. Tailnet-only,
+stdlib Python, no build step.
 
 Two browser surfaces for one Mac, reachable from a phone over Tailscale:
 
 | surface | port | what it is |
 |---|---|---|
-| **portal** | 8790 | One tile per local **server** and per **launchd agent**. Installs to the home screen as a PWA. |
+| **portal** | 8790 | One tile per local **server** and per **launchd agent** — the board (`/board`) or the six-key **simple screen** (`/phone`), whichever this device chose. Installs to the home screen as a PWA. |
 | **chat** | 8783 | The whole **tmux fleet as a Messages-style thread list**. Tap a session, get a live writable terminal. |
 | **skin** | per app | Optional. Fronts an app you *cannot* edit — a container — so it installs with your icon and palette. Idle until you configure one. |
 | **adopt** | 8793 | Paste a repo URL, read the plan, press Adopt. Loopback only by default — it installs software. |
+
+New in 1.2.0: the simple screen (`/phone`), a per-device home toggle, and a
+CALL key that reaches Trace's live voice surface in the cockpit app. Details in
+[Two front doors](#two-front-doors) below.
 
 Plus one internal: **:8784**, a loopback-only `ttyd` that is the chat's terminal
 backend. It is never reachable directly — `chat_server.py` proxies it under `/t`.
@@ -353,6 +358,12 @@ There is no password anywhere in the request path. What protects these surfaces:
   server's proxy.
 
 `FLEETDECK_OPEN=1` lifts the portal's IP check. Don't, except to debug.
+
+`/home?ui=` is a GET that writes a cookie — a state change behind no method
+guard, on a surface with no auth. Consistent with everything else here (a
+tailnet visitor can already open any tile), and worth naming rather than
+letting a reviewer discover it: this is the shape CSRF advice usually flags,
+accepted here for the same reason the rest of the surface has no login.
 
 **This is not production-grade.** It is tailnet-gated single-operator tooling.
 Before putting it in front of anyone else you want real auth (Cloudflare Access
