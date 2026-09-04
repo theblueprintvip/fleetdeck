@@ -23,8 +23,23 @@
 		<!-- "tailscale" resolves the 100.x address at boot and DEGRADES CLOSED to
 		     loopback if Tailscale is down. That bind is the only thing between
 		     the tailnet and a writable shell, so it must never fall open. -->
+		<!-- Loopback, with `tailscale serve` in front on the chat port, rather
+		     than binding the tailnet address directly.
+
+		     Upstream binds the tailnet IP here so that the socket itself is the
+		     boundary. That works, but it leaves the surface on plain http, and a
+		     plain-http origin is not a secure context: Add to Home Screen degrades
+		     on the one tile most worth installing, and iPhone Safari's
+		     https-upgrade can fail the load outright. LIVE-9 asserts exactly this
+		     and fails against a tailnet-bound chat.
+
+		     Fronting it does not widen access. A tailnet peer reaches the chat
+		     either way; a local process could already dial the tailnet IP as
+		     easily as loopback. And it still fails CLOSED — with Tailscale down
+		     the bind is loopback-only and the front simply stops answering, which
+		     is the property that matters for a writable shell. -->
 		<key>BIND</key>
-		<string>tailscale</string>
+		<string>127.0.0.1</string>
 	</dict>
 	<key>RunAtLoad</key>
 	<true/>

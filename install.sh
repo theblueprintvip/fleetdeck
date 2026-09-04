@@ -175,15 +175,19 @@ for t in "$HERE"/launchagents/*.plist.tmpl; do
   fi
 done
 
-# The portal binds loopback; this is what makes it reachable at all.
+# Both browser surfaces bind loopback; this is what makes them reachable, and
+# what puts a real cert in front of them. adopt (:$ADOPT_PORT) is deliberately
+# NOT here: it installs software, so it stays loopback-only and is reached by
+# an SSH tunnel if at all.
 TSBIN="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+for SERVE_PORT in "$PORTAL_PORT" "$CHAT_PORT"; do
 if [ -x "$TSBIN" ]; then
-  if "$TSBIN" serve status 2>/dev/null | grep -q ":$PORTAL_PORT"; then
-    echo "  = tailscale serve :$PORTAL_PORT"
-  elif SERVE_ERR="$("$TSBIN" serve --bg --https="$PORTAL_PORT" "http://127.0.0.1:$PORTAL_PORT" 2>&1)"; then
-    echo "  + tailscale serve :$PORTAL_PORT"
+  if "$TSBIN" serve status 2>/dev/null | grep -q ":$SERVE_PORT"; then
+    echo "  = tailscale serve :$SERVE_PORT"
+  elif SERVE_ERR="$("$TSBIN" serve --bg --https="$SERVE_PORT" "http://127.0.0.1:$SERVE_PORT" 2>&1)"; then
+    echo "  + tailscale serve :$SERVE_PORT"
   else
-    echo "  ! tailscale serve :$PORTAL_PORT failed"
+    echo "  ! tailscale serve :$SERVE_PORT failed"
     # Report what Tailscale actually said. This used to discard stderr and
     # print the HTTPS-certificates advice for EVERY failure, which sends an
     # operator into the admin console to fix a setting that was never the
@@ -198,9 +202,10 @@ if [ -x "$TSBIN" ]; then
       *)
         [ -n "$SERVE_ERR" ] && echo "    tailscale: $SERVE_ERR" ;;
     esac
-    echo "    Until then the portal answers only on 127.0.0.1:$PORTAL_PORT."
+    echo "    Until then it answers only on 127.0.0.1:$SERVE_PORT."
   fi
 fi
+done
 
 # Home-screen icons, if anything in the registry wants one. Non-fatal: this
 # needs a Chromium to rasterise SVG, and a machine without one should still end
