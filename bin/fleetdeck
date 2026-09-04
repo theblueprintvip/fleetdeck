@@ -66,7 +66,17 @@ except Exception: print("")' 2>/dev/null || echo ""
 # this backwards and you hand someone a link that 400s — which is exactly what
 # the upstream tool did.
 purl() { local h; h="$(host)"; [ -n "$h" ] && echo "https://$h:$PORTAL_PORT" || echo "http://127.0.0.1:$PORTAL_PORT"; }
-curl_() { local h; h="$(host)"; [ -n "$h" ] && echo "http://$h:$CHAT_PORT" || echo "(no tailnet)"; }
+curl_() {
+  local h; h="$(host)"; [ -n "$h" ] || { echo "(no tailnet)"; return; }
+  # https if the chat port has a serve mapping, http if it is bound to the
+  # tailnet address directly. Both are valid deployments of this repo, so read
+  # the answer instead of hardcoding one.
+  if [ -x "$TSBIN" ] && "$TSBIN" serve status 2>/dev/null | grep -q ":$CHAT_PORT"; then
+    echo "https://$h:$CHAT_PORT"
+  else
+    echo "http://$h:$CHAT_PORT"
+  fi
+}
 
 loaded() { launchctl print "gui/$UID_N/$1" >/dev/null 2>&1; }
 pid_of() { launchctl list 2>/dev/null | awk -v l="$1" '$3==l{print $1}'; }
