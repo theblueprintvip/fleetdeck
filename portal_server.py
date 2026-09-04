@@ -116,7 +116,13 @@ def tailnet_name():
         try:
             raw = subprocess.run([exe, "status", "--json"], capture_output=True,
                                  text=True, timeout=8).stdout
-            return json.loads(raw)["Self"]["DNSName"].rstrip(".")
+            name = json.loads(raw)["Self"]["DNSName"].rstrip(".")
+            # Installed but not logged in answers with a well-formed status whose
+            # DNSName is "". That parses, so the except below never fires and the
+            # nodename fallback was being skipped — the portal then advertised
+            # "https://:8790". An empty name is a miss, not an answer.
+            if name:
+                return name
         except Exception:
             continue
     return os.uname().nodename
