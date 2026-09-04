@@ -1682,8 +1682,19 @@ CALL_TARGET_ID = "cockpit"
 CALL_TARGET_PATH = "/admin/trace/local"
 
 
+# The CALL key reaches a voice stack that is entirely upstream-operator-specific:
+# an Ollama router, ElevenLabs or whisper.cpp for the ear, a cloned voice on
+# :8890, an `imsg` wrapper for the mouth, and a "cockpit" app to host the SDK
+# this stdlib server cannot. On a machine with none of that, the key renders
+# someone else's avatar over a link that goes nowhere useful. Opt-in, default
+# off — the same treatment as operator.phone.
+CALL_ENABLED = bool(CONF.get("call", {}).get("enabled", False))
+
+
 def call_destination(by_id):
-    """(href, label, sub) for the CALL key."""
+    """(href, label, sub) for the CALL key, or None when it is switched off."""
+    if not CALL_ENABLED:
+        return None
     s = by_id.get(CALL_TARGET_ID)
     if s and s.get("linkable") and s.get("url"):
         base = s["url"]
@@ -2076,8 +2087,7 @@ PHONE_PAGE = """<!doctype html>
 </style></head><body>
  <div class="clock"><div class="time" id="t">--:--</div><div class="date" id="d">&nbsp;</div></div>
  <div class="grid">__KEYS__</div>
- <a class="call" href="__CALL_HREF__"><img src="/trace-192.png" alt="" class="face"><span>__CALL_LABEL__</span><em>__CALL_SUB__</em></a>
- <div class="foot"><a href="/board">all __N__ services &rsaquo;</a><span class="sep">·</span>__HOME_TOGGLE__</div>
+__CALL__ <div class="foot"><a href="/board">all __N__ services &rsaquo;</a><span class="sep">·</span>__HOME_TOGGLE__</div>
 
 <script>
  function tick(){
@@ -2419,16 +2429,24 @@ class Handler(BaseHTTPRequestHandler):
                 keys.append('<span class="key">%s<span>%s</span>'
                             '<span class="st">%s</span></span>'
                             % (svg, esc_html(label), why))
-        href, label, sub = call_destination(by_id)
+        call = call_destination(by_id)
+        if call:
+            href, label, sub = call
+            call_html = (' <a class="call" href="%s">'
+                         '<img src="/trace-192.png" alt="" class="face">'
+                         '<span>%s</span><em>%s</em></a>\n'
+                         % (esc_html(href), esc_html(label), esc_html(sub)))
+        else:
+            # Switched off: emit nothing rather than a disabled-looking key. The
+            # six keys reflow into the space on their own.
+            call_html = ""
         toggle = ('<a class="on" href="/home?ui=board">unset as home</a>'
                   if simple_is_home
                   else '<a href="/home?ui=simple">set as home</a>')
         page = (PHONE_PAGE
                 .replace("__MACHINE__", esc_html(MACHINE))
                 .replace("__KEYS__", "".join(keys))
-                .replace("__CALL_HREF__", esc_html(href))
-                .replace("__CALL_LABEL__", esc_html(label))
-                .replace("__CALL_SUB__", esc_html(sub))
+                .replace("__CALL__", call_html)
                 .replace("__HOME_TOGGLE__", toggle)
                 .replace("__N__", str(len(scan_now.get("services", [])))))
         return self._send(200, page, "text/html; charset=utf-8")
