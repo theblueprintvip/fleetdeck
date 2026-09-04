@@ -11,6 +11,7 @@ including the portal's own tile, on the page it is serving.
     python3 test_fleetdeck.py --unit    # unit only (no tailnet needed)
 """
 
+import contextlib
 import importlib.util
 import json
 import os
@@ -28,7 +29,11 @@ spec = importlib.util.spec_from_file_location(
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
 
-BASE = f"https://{P.HOST}:{P.PORT}"
+# https because the portal is meant to sit behind the `tailscale serve` front,
+# which is what the phone actually talks to. Overridable so the suite can be
+# run against plain loopback before that front exists — on a fresh machine the
+# alternative is that every live check fails on TLS and hides the real result.
+BASE = os.environ.get("FLEETDECK_TEST_BASE") or f"https://{P.HOST}:{P.PORT}"
 _fails = []
 
 
@@ -39,6 +44,34 @@ def check(name, cond, detail=""):
         _fails.append(name)
 
 
+@contextlib.contextmanager
+def fixture_agents(directory, state):
+    """Point launch_agents() at a directory of fixtures, under a config that
+    cannot be influenced by whoever is running the suite.
+
+    launch_agents() reads AGENT_DIR, launchd_state(), and — the part that bit —
+    the include/exclude filter and label_prefix straight off the live CONF. A
+    real operator's config.json with include ["com.mine."] filters every
+    com.acme.* fixture below out of the result, and the suite then dies on a
+    KeyError or an IndexError instead of reporting a pass or a fail. These
+    assertions are about the rule, not about this machine, so the rule gets a
+    clean config.
+    """
+    real_dir, real_state = P.AGENT_DIR, P.launchd_state
+    real_agents = P.CONF["agents"]
+    real_prefix = P.CONF.get("label_prefix")
+    P.AGENT_DIR = directory
+    P.launchd_state = (lambda: state)
+    P.CONF["agents"] = {**real_agents, "include": [], "exclude": []}
+    P.CONF["label_prefix"] = "com.acme"
+    try:
+        yield
+    finally:
+        P.AGENT_DIR, P.launchd_state = real_dir, real_state
+        P.CONF["agents"] = real_agents
+        P.CONF["label_prefix"] = real_prefix
+
+
 def agents_from(plists, state):
     """Run launch_agents() against a directory we control, so the assertions
     are about the rule rather than about whatever this machine happens to be
@@ -47,13 +80,8 @@ def agents_from(plists, state):
         for label, body in plists.items():
             with open(os.path.join(d, f"{label}.plist"), "wb") as fh:
                 plistlib.dump({"Label": label, **body}, fh)
-        real_dir, real_state = P.AGENT_DIR, P.launchd_state
-        P.AGENT_DIR = d
-        P.launchd_state = lambda: state
-        try:
+        with fixture_agents(d, state):
             return {a["label"]: a for a in P.launch_agents()}
-        finally:
-            P.AGENT_DIR, P.launchd_state = real_dir, real_state
 
 
 # ── health classification ────────────────────────────────────────────────────
@@ -131,12 +159,8 @@ check("UNIT-8 a declared but missing log is absence, not a fallback time",
 with tempfile.TemporaryDirectory() as d:
     open(os.path.join(d, "com.acme.malformed.plist"), "w").write(
         '<?xml version="1.0"?><!-- a -- b --><plist version="1.0"><dict/></plist>')
-    real_dir, real_state = P.AGENT_DIR, P.launchd_state
-    P.AGENT_DIR, P.launchd_state = d, lambda: {}
-    try:
+    with fixture_agents(d, {}):
         t = P.launch_agents()[0]
-    finally:
-        P.AGENT_DIR, P.launchd_state = real_dir, real_state
 check("UNIT-11 an unparseable plist says so rather than rendering blank",
       t["unreadable"] and t["program"] == "plist will not parse",
       f"program={t['program']!r} unreadable={t['unreadable']!r}")
@@ -290,10 +314,21 @@ try:
     # refusing sessions on billing. Asserted against CALL_TARGET_PATH rather
     # than a literal, so pointing the key back at the ElevenLabs screen is one
     # edit in one file instead of two that can disagree.
-    check("LIVE-17 the phone screen draws no connecting screen of its own",
-          'id="conn"' not in phone and "class=\"rings\"" not in phone
-          and "a.call.opening" in phone
-          and P.CALL_TARGET_PATH.split("?")[0] in phone)
+    # The key is opt-in (config "call": {"enabled": ...}), so assert whichever
+    # contract is in force rather than assuming it is on. Off must mean absent,
+    # not present-and-dead: a key wearing the steward's face over a link to a
+    # voice stack this machine does not run is the thing being guarded against.
+    if P.CALL_ENABLED:
+        check("LIVE-17 the phone screen draws no connecting screen of its own",
+              'id="conn"' not in phone and "class=\"rings\"" not in phone
+              and "a.call.opening" in phone
+              and P.CALL_TARGET_PATH.split("?")[0] in phone)
+    else:
+        check("LIVE-17 the CALL key is absent entirely when switched off",
+              'id="conn"' not in phone and "class=\"rings\"" not in phone
+              and 'class="call"' not in phone
+              and "trace-192" not in phone
+              and P.CALL_TARGET_PATH.split("?")[0] not in phone)
 except Exception as e:
     check("LIVE-10..14 the two surfaces render", False, str(e))
 
