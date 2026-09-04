@@ -77,8 +77,10 @@ CHROME_CANDIDATES = [
     shutil.which("google-chrome") or "",
 ]
 
-BG = "#05070a"      # --bg from the portal stylesheet
-INK = "#4fe3c1"     # --on, the live lamp colour
+BG = "#0f1216"      # --bg from the portal stylesheet
+INK = "#8ad3c8"     # --on's hue with more chroma. At 24px inline on a dark
+                   # board the muted sage reads; at 180px on a home screen,
+                   # against an arbitrary wallpaper, it needs the presence.
 STROKE = 26         # rendered stroke, px at 512
 FILL = 0.73         # longest side of the glyph, as a fraction of the canvas
 MASK_FILL = 0.55    # ditto for maskable, which Android crops to a circle

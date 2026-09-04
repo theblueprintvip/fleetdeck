@@ -82,12 +82,12 @@ PAGE = """<!doctype html><html lang="en"><head>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Adopt">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#05070a">
+<meta name="theme-color" content="#0f1216">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <title>adopt</title>
 <style>
-  :root{--bg:#05070a;--panel:#0a0e13;--line:#18222b;--ink:#8fa3b0;
-        --bright:#d6e4ec;--dim:#4a5b68;--on:#4fe3c1;--warn:#d9a441;--bad:#e0594b}
+  :root{--bg:#0f1216;--panel:#161b21;--line:#262e37;--ink:#93a1ad;
+        --bright:#dde5ec;--dim:#5a6772;--on:#63b8b0;--warn:#f7b552;--bad:#d9483f}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--ink);
        font:13px/1.6 ui-monospace,"SF Mono",Menlo,monospace;

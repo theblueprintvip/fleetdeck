@@ -75,7 +75,7 @@ ICONS = os.path.join(HERE, "icons")
 SKINS = os.path.join(HERE, "skins")
 
 BIND = os.environ.get("FLEETDECK_SKIN_BIND", "127.0.0.1")
-THEME = "#05070a"
+THEME = "#0f1216"
 MARK = "fleetdeck-skin"  # the idempotency marker
 
 # Hop-by-hop headers: meaningless to forward, and Content-Length/Transfer-

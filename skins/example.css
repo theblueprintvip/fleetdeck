@@ -20,25 +20,25 @@
  * does not care what the selectors are called.
  *
  * Palette below is fleetdeck's own, so a skinned app matches the board:
- *   --bg  #05070a   --panel #0a0e13   --line #18222b
- *   --ink #8fa3b0   --bright #d6e4ec  --on   #4fe3c1
+ *   --bg  #0f1216   --panel #161b21   --line #262e37
+ *   --ink #93a1ad   --bright #dde5ec  --on   #63b8b0
  */
 
 :root {
   /* Rename these to whatever the app actually calls them. */
-  --bg-color: #05070a;
-  --surface: #0a0e13;
-  --border: #18222b;
-  --text: #d6e4ec;
-  --text-light: #8fa3b0;
-  --fg-color: #4fe3c1;
+  --bg-color: #0f1216;
+  --surface: #161b21;
+  --border: #262e37;
+  --text: #dde5ec;
+  --text-light: #93a1ad;
+  --fg-color: #63b8b0;
 }
 
 /* Checkboxes, radios and range thumbs usually have no colour in an app's CSS
  * at all — that blue is the browser's own default, and only accent-color
  * reaches it. */
 :root {
-  accent-color: #4fe3c1;
+  accent-color: #63b8b0;
 }
 
 /* If a full-strength accent was tuned for a muted colour and blows out under a

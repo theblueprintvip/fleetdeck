@@ -16,19 +16,19 @@
  *
  * Mapping is straight off the portal stylesheet, so a tile and the app behind
  * it are the same machine:
- *   --bg  #05070a   --panel #0a0e13   --line #18222b
- *   --ink #8fa3b0   --bright #d6e4ec  --on   #4fe3c1
+ *   --bg  #0f1216   --panel #161b21   --line #262e37
+ *   --ink #93a1ad   --bright #dde5ec  --on   #63b8b0
  */
 
 :root {
-  --bg-color: #05070a;
-  --fg-color: #4fe3c1;
-  --surface: #0a0e13;
-  --text: #d6e4ec;
-  --text-light: #8fa3b0;
-  --border: #18222b;
-  --error: #e0594b;
-  --success: #4fe3c1;
+  --bg-color: #0f1216;
+  --fg-color: #63b8b0;
+  --surface: #161b21;
+  --text: #dde5ec;
+  --text-light: #93a1ad;
+  --border: #262e37;
+  --error: #d9483f;
+  --success: #63b8b0;
 }
 
 /* Their overlay is a full-strength radial of --fg-color into --bg-color. That
@@ -47,7 +47,7 @@
 /* Checkboxes and range thumbs have no colour in their CSS at all — that blue
  * is the browser's own default, and only accent-color reaches it. */
 :root {
-  accent-color: #4fe3c1;
+  accent-color: #63b8b0;
 }
 
 /* Hardcoded muted red on near-black; the rest of the app is variable-driven. */
