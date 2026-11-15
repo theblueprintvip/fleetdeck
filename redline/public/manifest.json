@@ -1,0 +1,46 @@
+{
+  "id": "/",
+  "name": "Redline — Grammarly for Contracts",
+  "short_name": "Redline",
+  "description": "Scan any contract for traps in seconds and get safe rewrites.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#F3F1EC",
+  "theme_color": "#14171B",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    { "src": "/redline_logo_transparent.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/redline_logo_transparent.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Scan with Redline", "short_name": "Scan", "url": "/?action=scan&source=shortcut" },
+    { "name": "Create a safe contract", "short_name": "Create", "url": "/?action=create&source=shortcut" }
+  ],
+  "file_handlers": [
+    {
+      "action": "/?source=file",
+      "accept": {
+        "application/pdf": [".pdf"],
+        "text/plain": [".txt"]
+      },
+      "launch_type": "single-client"
+    }
+  ],
+  "share_target": {
+    "action": "/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        { "name": "file", "accept": ["application/pdf", ".pdf", "text/plain", ".txt"] }
+      ]
+    }
+  },
+  "launch_handler": { "client_mode": "focus-existing" }
+}

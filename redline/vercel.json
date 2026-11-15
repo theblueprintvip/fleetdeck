@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    { "source": "/manifest.json", "destination": "/public/manifest.json" },
+    { "source": "/sw.js", "destination": "/public/sw.js" },
+    { "source": "/tila_final_sparkle_brown_eyes.png", "destination": "/public/tila_final_sparkle_brown_eyes.png" },
+    { "source": "/redline_logo_transparent.png", "destination": "/public/redline_logo_transparent.png" },
+    { "source": "/scan", "destination": "/index.html" }
+  ],
+  "headers": [
+    { "source": "/sw.js", "headers": [
+      { "key": "Cache-Control", "value": "no-cache" },
+      { "key": "Service-Worker-Allowed", "value": "/" }
+    ] },
+    { "source": "/manifest.json", "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }] }
+  ]
+}
