@@ -325,15 +325,15 @@
     { id: 'amend', label: 'One-sided changes', weight: 10, re: [/may\s+(modify|amend|change|update)[^.]{0,80}\b(at any time|sole discretion|without notice)/i],
       why: 'They can rewrite the deal after you sign.', fix: 'Any amendment must be in writing and signed by both parties.' },
     { id: 'noncomp', label: 'Broad non-compete', weight: 12, re: [/non[- ]?compet/i, /shall not[^.]{0,80}\b(compete|competing business|similar business)/i],
-      why: 'Restricts where and for whom you can work.', fix: 'For 6 months after termination, neither party will solicit the other\u2019s clients it worked with directly under this Agreement. No other restriction applies.' },
+      why: 'Restricts where and for whom you can work.', fix: 'For 6 months after termination, neither party will solicit the other’s clients it worked with directly under this Agreement. No other restriction applies.' },
     { id: 'ip', label: 'IP grab', weight: 14, re: [/all\s+(inventions|intellectual property|work product)[^.]{0,120}\b(whether or not|prior|during or after|conceived)/i, /assigns?\s+(all|any)\s+(right|rights),?\s+title/i],
       why: 'Takes ownership of work beyond the project, sometimes your prior work.', fix: 'Client owns the deliverables specified in the Statement of Work once paid in full. Contractor keeps all pre-existing IP and general know-how.' },
     { id: 'ld', label: 'Penalty damages', weight: 10, re: [/liquidated\s+damages/i, /\bpenalt(y|ies)\s+of\b/i],
       why: 'Fixed payouts that can exceed any real loss.', fix: 'Each party is liable only for actual, proven direct damages.' },
     { id: 'term', label: 'Lopsided termination', weight: 8, re: [/(company|client|licensor|employer|we)\s+may\s+terminate[^.]{0,80}\b(at any time|for any reason|for convenience|without cause)/i],
-      why: 'Only one side can walk away freely.', fix: 'Either party may terminate on 30 days\u2019 written notice. Work completed up to termination is paid.' },
+      why: 'Only one side can walk away freely.', fix: 'Either party may terminate on 30 days’ written notice. Work completed up to termination is paid.' },
     { id: 'liab', label: 'Liability shield', weight: 10, re: [/in no event shall (company|client|licensor|provider|we)[^.]{0,40}be liable/i, /(company|provider|licensor)\s+shall\s+(have no|not be)\s+liab/i],
-      why: 'Caps or removes their liability but not yours.', fix: 'Each party\u2019s total liability is capped at the fees paid in the prior 12 months, except for fraud, gross negligence or wilful misconduct.' },
+      why: 'Caps or removes their liability but not yours.', fix: 'Each party’s total liability is capped at the fees paid in the prior 12 months, except for fraud, gross negligence or wilful misconduct.' },
     { id: 'arb', label: 'Forced arbitration', weight: 8, re: [/binding\s+arbitration/i, /class[- ]action\s+waiver/i, /waive[^.]{0,40}\bjury\b/i],
       why: 'Removes your right to court and to join a class action.', fix: 'Disputes go first to good-faith negotiation for 30 days, then to the courts of the jurisdiction where the services are performed.' },
     { id: 'venue', label: 'Remote venue', weight: 5, re: [/exclusive\s+jurisdiction/i, /governed by the laws of[^.]{0,60}\bwithout regard/i],
@@ -342,8 +342,8 @@
       why: 'Secrecy obligations that never expire and bind only you.', fix: 'Confidentiality obligations are mutual and last 3 years after termination, or as long as the information is a trade secret.' },
     { id: 'fees', label: 'Punitive late fees', weight: 6, re: [/late\s+(fee|charge)/i, /interest\s+(at|of)\s+(\d{2,}|[2-9](\.\d+)?)\s*%/i],
       why: 'Fees or interest that compound fast.', fix: 'Late payments accrue simple interest at the statutory rate, starting 30 days after a written reminder.' },
-    { id: 'assign', label: 'Free assignment', weight: 6, re: [/may\s+assign[^.]{0,60}\bwithout\s+(your|the other party\u2019s|the other party's|prior)?\s*consent/i],
-      why: 'You can end up contracted to a stranger.', fix: 'Neither party may assign this Agreement without the other\u2019s written consent, not unreasonably withheld.' },
+    { id: 'assign', label: 'Free assignment', weight: 6, re: [/may\s+assign[^.]{0,60}\bwithout\s+(your|the other party’s|the other party's|prior)?\s*consent/i],
+      why: 'You can end up contracted to a stranger.', fix: 'Neither party may assign this Agreement without the other’s written consent, not unreasonably withheld.' },
   ];
   const BASE = 12;
 
@@ -368,15 +368,15 @@
   }
 
   // ---- 195 countries with their legal family: K common law, C civil law, M mixed, I Islamic-law influenced ----
-  const COUNTRIES = ('Afghanistan:I|Albania:C|Algeria:C|Andorra:C|Angola:C|Antigua and Barbuda:K|Argentina:C|Armenia:C|Australia:K|Austria:C|Azerbaijan:C|Bahamas:K|Bahrain:I|Bangladesh:K|Barbados:K|Belarus:C|Belgium:C|Belize:K|Benin:C|Bhutan:M|Bolivia:C|Bosnia and Herzegovina:C|Botswana:M|Brazil:C|Brunei:M|Bulgaria:C|Burkina Faso:C|Burundi:C|Cabo Verde:C|Cambodia:C|Cameroon:M|Canada:M|Central African Republic:C|Chad:C|Chile:C|China:C|Colombia:C|Comoros:M|Congo:C|Costa Rica:C|C\u00f4te d\u2019Ivoire:C|Croatia:C|Cuba:C|Cyprus:M|Czechia:C|Democratic Republic of the Congo:C|Denmark:C|Djibouti:M|Dominica:K|Dominican Republic:C|Ecuador:C|Egypt:C|El Salvador:C|Equatorial Guinea:C|Eritrea:M|Estonia:C|Eswatini:M|Ethiopia:C|Fiji:K|Finland:C|France:C|Gabon:C|Gambia:M|Georgia:C|Germany:C|Ghana:K|Greece:C|Grenada:K|Guatemala:C|Guinea:C|Guinea-Bissau:C|Guyana:M|Haiti:C|Holy See:C|Honduras:C|Hungary:C|Iceland:C|India:K|Indonesia:M|Iran:I|Iraq:I|Ireland:K|Israel:M|Italy:C|Jamaica:K|Japan:C|Jordan:C|Kazakhstan:C|Kenya:K|Kiribati:K|Kuwait:I|Kyrgyzstan:C|Laos:C|Latvia:C|Lebanon:C|Lesotho:M|Liberia:K|Libya:I|Liechtenstein:C|Lithuania:C|Luxembourg:C|Madagascar:C|Malawi:K|Malaysia:M|Maldives:I|Mali:C|Malta:M|Marshall Islands:K|Mauritania:I|Mauritius:M|Mexico:C|Micronesia:K|Moldova:C|Monaco:C|Mongolia:C|Montenegro:C|Morocco:C|Mozambique:C|Myanmar:K|Namibia:M|Nauru:K|Nepal:M|Netherlands:C|New Zealand:K|Nicaragua:C|Niger:C|Nigeria:M|North Korea:C|North Macedonia:C|Norway:C|Oman:I|Pakistan:M|Palau:K|Palestine:M|Panama:C|Papua New Guinea:K|Paraguay:C|Peru:C|Philippines:M|Poland:C|Portugal:C|Qatar:I|Romania:C|Russia:C|Rwanda:M|Saint Kitts and Nevis:K|Saint Lucia:M|Saint Vincent and the Grenadines:K|Samoa:K|San Marino:C|Sao Tome and Principe:C|Saudi Arabia:I|Senegal:C|Serbia:C|Seychelles:M|Sierra Leone:K|Singapore:K|Slovakia:C|Slovenia:C|Solomon Islands:K|Somalia:M|South Africa:M|South Korea:C|South Sudan:M|Spain:C|Sri Lanka:M|Sudan:I|Suriname:C|Sweden:C|Switzerland:C|Syria:C|Tajikistan:C|Tanzania:K|Thailand:C|Timor-Leste:C|Togo:C|Tonga:K|Trinidad and Tobago:K|Tunisia:C|Turkey:C|Turkmenistan:C|Tuvalu:K|Uganda:K|Ukraine:C|United Arab Emirates:I|United Kingdom:K|United States:K|Uruguay:C|Uzbekistan:C|Vanuatu:M|Venezuela:C|Vietnam:C|Yemen:I|Zambia:K|Zimbabwe:M')
+  const COUNTRIES = ('Afghanistan:I|Albania:C|Algeria:C|Andorra:C|Angola:C|Antigua and Barbuda:K|Argentina:C|Armenia:C|Australia:K|Austria:C|Azerbaijan:C|Bahamas:K|Bahrain:I|Bangladesh:K|Barbados:K|Belarus:C|Belgium:C|Belize:K|Benin:C|Bhutan:M|Bolivia:C|Bosnia and Herzegovina:C|Botswana:M|Brazil:C|Brunei:M|Bulgaria:C|Burkina Faso:C|Burundi:C|Cabo Verde:C|Cambodia:C|Cameroon:M|Canada:M|Central African Republic:C|Chad:C|Chile:C|China:C|Colombia:C|Comoros:M|Congo:C|Costa Rica:C|Côte d’Ivoire:C|Croatia:C|Cuba:C|Cyprus:M|Czechia:C|Democratic Republic of the Congo:C|Denmark:C|Djibouti:M|Dominica:K|Dominican Republic:C|Ecuador:C|Egypt:C|El Salvador:C|Equatorial Guinea:C|Eritrea:M|Estonia:C|Eswatini:M|Ethiopia:C|Fiji:K|Finland:C|France:C|Gabon:C|Gambia:M|Georgia:C|Germany:C|Ghana:K|Greece:C|Grenada:K|Guatemala:C|Guinea:C|Guinea-Bissau:C|Guyana:M|Haiti:C|Holy See:C|Honduras:C|Hungary:C|Iceland:C|India:K|Indonesia:M|Iran:I|Iraq:I|Ireland:K|Israel:M|Italy:C|Jamaica:K|Japan:C|Jordan:C|Kazakhstan:C|Kenya:K|Kiribati:K|Kuwait:I|Kyrgyzstan:C|Laos:C|Latvia:C|Lebanon:C|Lesotho:M|Liberia:K|Libya:I|Liechtenstein:C|Lithuania:C|Luxembourg:C|Madagascar:C|Malawi:K|Malaysia:M|Maldives:I|Mali:C|Malta:M|Marshall Islands:K|Mauritania:I|Mauritius:M|Mexico:C|Micronesia:K|Moldova:C|Monaco:C|Mongolia:C|Montenegro:C|Morocco:C|Mozambique:C|Myanmar:K|Namibia:M|Nauru:K|Nepal:M|Netherlands:C|New Zealand:K|Nicaragua:C|Niger:C|Nigeria:M|North Korea:C|North Macedonia:C|Norway:C|Oman:I|Pakistan:M|Palau:K|Palestine:M|Panama:C|Papua New Guinea:K|Paraguay:C|Peru:C|Philippines:M|Poland:C|Portugal:C|Qatar:I|Romania:C|Russia:C|Rwanda:M|Saint Kitts and Nevis:K|Saint Lucia:M|Saint Vincent and the Grenadines:K|Samoa:K|San Marino:C|Sao Tome and Principe:C|Saudi Arabia:I|Senegal:C|Serbia:C|Seychelles:M|Sierra Leone:K|Singapore:K|Slovakia:C|Slovenia:C|Solomon Islands:K|Somalia:M|South Africa:M|South Korea:C|South Sudan:M|Spain:C|Sri Lanka:M|Sudan:I|Suriname:C|Sweden:C|Switzerland:C|Syria:C|Tajikistan:C|Tanzania:K|Thailand:C|Timor-Leste:C|Togo:C|Tonga:K|Trinidad and Tobago:K|Tunisia:C|Turkey:C|Turkmenistan:C|Tuvalu:K|Uganda:K|Ukraine:C|United Arab Emirates:I|United Kingdom:K|United States:K|Uruguay:C|Uzbekistan:C|Vanuatu:M|Venezuela:C|Vietnam:C|Yemen:I|Zambia:K|Zimbabwe:M')
     .split('|').map(s => { const [name, fam] = s.split(':'); return { name, fam }; });
-  const ALIASES = { 'usa': 'United States', 'u.s.': 'United States', 'america': 'United States', 'uk': 'United Kingdom', 'britain': 'United Kingdom', 'england': 'United Kingdom', 'uae': 'United Arab Emirates', 'dubai': 'United Arab Emirates', 'ivory coast': 'C\u00f4te d\u2019Ivoire', 'czech republic': 'Czechia', 'turkiye': 'Turkey', 't\u00fcrkiye': 'Turkey', 'vatican': 'Holy See', 'drc': 'Democratic Republic of the Congo', 'burma': 'Myanmar', 'swaziland': 'Eswatini', 'cape verde': 'Cabo Verde', 'east timor': 'Timor-Leste', 'korea': 'South Korea', 'espa\u00f1a': 'Spain', 'deutschland': 'Germany', 'allemagne': 'Germany', 'alemania': 'Germany', 'brasil': 'Brazil', 'm\u00e9xico': 'Mexico', 'italia': 'Italy', 'nederland': 'Netherlands', 'espagne': 'Spain', 'royaume-uni': 'United Kingdom', '\u00e9tats-unis': 'United States', 'estados unidos': 'United States', 'reino unido': 'United Kingdom', 'japon': 'Japan', 'jap\u00f3n': 'Japan', 'chine': 'China', '\u4e2d\u56fd': 'China', '\u65e5\u672c': 'Japan', '\u7f8e\u56fd': 'United States', '\u82f1\u56fd': 'United Kingdom', '\u5fb7\u56fd': 'Germany', '\u0627\u0644\u0633\u0639\u0648\u062f\u064a\u0629': 'Saudi Arabia', '\u0645\u0635\u0631': 'Egypt', '\u0627\u0644\u0625\u0645\u0627\u0631\u0627\u062a': 'United Arab Emirates' };
+  const ALIASES = { 'usa': 'United States', 'u.s.': 'United States', 'america': 'United States', 'uk': 'United Kingdom', 'britain': 'United Kingdom', 'england': 'United Kingdom', 'uae': 'United Arab Emirates', 'dubai': 'United Arab Emirates', 'ivory coast': 'Côte d’Ivoire', 'czech republic': 'Czechia', 'turkiye': 'Turkey', 'türkiye': 'Turkey', 'vatican': 'Holy See', 'drc': 'Democratic Republic of the Congo', 'burma': 'Myanmar', 'swaziland': 'Eswatini', 'cape verde': 'Cabo Verde', 'east timor': 'Timor-Leste', 'korea': 'South Korea', 'españa': 'Spain', 'deutschland': 'Germany', 'allemagne': 'Germany', 'alemania': 'Germany', 'brasil': 'Brazil', 'méxico': 'Mexico', 'italia': 'Italy', 'nederland': 'Netherlands', 'espagne': 'Spain', 'royaume-uni': 'United Kingdom', 'états-unis': 'United States', 'estados unidos': 'United States', 'reino unido': 'United Kingdom', 'japon': 'Japan', 'japón': 'Japan', 'chine': 'China', '中国': 'China', '日本': 'Japan', '美国': 'United States', '英国': 'United Kingdom', '德国': 'Germany', 'السعودية': 'Saudi Arabia', 'مصر': 'Egypt', 'الإمارات': 'United Arab Emirates' };
 
   // Whole-word match for Latin names (so "woman" is not Oman); plain substring for other scripts.
   function mentions(t, name) {
     const n = name.toLowerCase();
-    if (!/^[\x20-\x7e\u00c0-\u024f\u2019]+$/.test(n)) return t.includes(n);
-    return new RegExp(`(^|[^a-z\u00c0-\u024f])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z\u00c0-\u024f]|$)`).test(t);
+    if (!/^[\x20-\x7eÀ-ɏ’]+$/.test(n)) return t.includes(n);
+    return new RegExp(`(^|[^a-zÀ-ɏ])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-zÀ-ɏ]|$)`).test(t);
   }
   const BY_LENGTH = [...COUNTRIES].sort((a, b) => b.name.length - a.name.length);
   function findCountry(text) {
@@ -389,141 +389,141 @@
 
   // ---- Languages ----
   const L = {
-    en: { greet: 'Hi, I\u2019m Tila. Drop a contract above and I\u2019ll scan it, or ask me about any clause or any country.',
+    en: { greet: 'Hi, I’m Tila. Drop a contract above and I’ll scan it, or ask me about any clause or any country.',
       how: 'Upload a PDF and Redline scans it in under two seconds: a Risk score from 12 to 99, every trap, and a safe rewrite for each.',
       channels: 'You can also text a PDF to {sms}, email it to {email}, or share it to Redline from your phone.',
       price: 'Free covers 3 scans a month. Pro is $19 a month for unlimited scans and drafts. Team is $49 a month for 5 seats.',
-      trap: 'About \u201c{label}\u201d: {why}\nSafer wording: {fix}', last: 'Your last scan scored {risk}/100 with {n} traps: {list}. Ask me about any of them.',
-      none: 'You haven\u2019t scanned anything yet. Upload a contract and I\u2019ll walk you through it.', create: 'Fill in the six fields under \u201cCreate a safe contract\u201d and I\u2019ll draft one that scores 12.',
-      fallback: 'I can explain any of the 14 traps, give a contract note for any of 195 countries, or walk you through your scan. Try \u201cwhat is auto-renewal?\u201d or \u201ccontracts in Germany\u201d.',
-      country: '{country}: {note}', nla: 'Not legal advice.', ph: 'Ask Tila anything\u2026',
+      trap: 'About “{label}”: {why}\nSafer wording: {fix}', last: 'Your last scan scored {risk}/100 with {n} traps: {list}. Ask me about any of them.',
+      none: 'You haven’t scanned anything yet. Upload a contract and I’ll walk you through it.', create: 'Fill in the six fields under “Create a safe contract” and I’ll draft one that scores 12.',
+      fallback: 'I can explain any of the 14 traps, give a contract note for any of 195 countries, or walk you through your scan. Try “what is auto-renewal?” or “contracts in Germany”.',
+      country: '{country}: {note}', nla: 'Not legal advice.', ph: 'Ask Tila anything…',
       K: 'common-law system. Courts enforce the written words closely and follow precedent, so spell out liability caps, termination and governing law.',
       C: 'civil-law system. The civil code fills gaps and courts can cut back unfair terms; penalty and non-compete clauses are often reduced.',
       M: 'mixed legal system. Common-law and civil-law rules can both apply, sometimes by region, so name the governing law and courts explicitly.',
       I: 'Islamic-law principles can apply alongside statute. Interest and some penalty clauses may not be enforceable; fixed fees are safer.' },
-    es: { greet: 'Hola, soy Tila. Sube un contrato y lo analizo, o preg\u00fantame por cualquier cl\u00e1usula o pa\u00eds.',
-      how: 'Sube un PDF y Redline lo analiza en menos de dos segundos: una puntuaci\u00f3n de riesgo de 12 a 99, cada trampa y una redacci\u00f3n segura para cada una.',
-      channels: 'Tambi\u00e9n puedes enviar el PDF por SMS al {sms}, por correo a {email} o compartirlo con Redline desde tu m\u00f3vil.',
-      price: 'Gratis incluye 3 an\u00e1lisis al mes. Pro cuesta 19 $ al mes, ilimitado. Team cuesta 49 $ al mes para 5 personas.',
-      trap: 'Sobre \u201c{label}\u201d: {why}\nRedacci\u00f3n m\u00e1s segura: {fix}', last: 'Tu \u00faltimo an\u00e1lisis dio {risk}/100 con {n} trampas: {list}. Preg\u00fantame por cualquiera.',
-      none: 'A\u00fan no has analizado nada. Sube un contrato y te lo explico.', create: 'Rellena los seis campos de \u201cCreate a safe contract\u201d y redacto uno con riesgo 12.',
-      fallback: 'Puedo explicar las 14 trampas, darte una nota sobre contratos en 195 pa\u00edses o repasar tu an\u00e1lisis. Prueba \u201c\u00bfqu\u00e9 es la renovaci\u00f3n autom\u00e1tica?\u201d o \u201ccontratos en Alemania\u201d.',
-      country: '{country}: {note}', nla: 'No es asesoramiento legal.', ph: 'Preg\u00fantale a Tila\u2026',
-      K: 'sistema de common law. Los tribunales aplican el texto al pie de la letra y siguen precedentes: fija l\u00edmites de responsabilidad, terminaci\u00f3n y ley aplicable.',
-      C: 'sistema de derecho civil. El c\u00f3digo civil llena vac\u00edos y los jueces pueden moderar cl\u00e1usulas abusivas; las penalizaciones y no competencia se reducen a menudo.',
-      M: 'sistema mixto. Pueden aplicarse reglas de common law y de derecho civil, a veces por regi\u00f3n: indica expresamente la ley y los tribunales.',
-      I: 'pueden aplicarse principios del derecho isl\u00e1mico junto a la ley. Los intereses y algunas penalizaciones pueden no ser exigibles; mejor tarifas fijas.' },
-    fr: { greet: 'Bonjour, je suis Tila. D\u00e9posez un contrat et je l\u2019analyse, ou posez-moi une question sur une clause ou un pays.',
-      how: 'D\u00e9posez un PDF : Redline l\u2019analyse en moins de deux secondes, avec un score de risque de 12 \u00e0 99, chaque pi\u00e8ge et une r\u00e9daction s\u00fbre pour chacun.',
-      channels: 'Vous pouvez aussi envoyer le PDF par SMS au {sms}, par e-mail \u00e0 {email}, ou le partager vers Redline depuis votre t\u00e9l\u00e9phone.',
-      price: 'Gratuit : 3 analyses par mois. Pro : 19 $ par mois, illimit\u00e9. Team : 49 $ par mois pour 5 personnes.',
-      trap: '\u00c0 propos de \u00ab {label} \u00bb : {why}\nR\u00e9daction plus s\u00fbre : {fix}', last: 'Votre derni\u00e8re analyse : {risk}/100 avec {n} pi\u00e8ges : {list}. Demandez-moi le d\u00e9tail.',
-      none: 'Vous n\u2019avez encore rien analys\u00e9. D\u00e9posez un contrat et je vous guide.', create: 'Remplissez les six champs de \u00ab Create a safe contract \u00bb et je r\u00e9dige un contrat \u00e0 risque 12.',
-      fallback: 'Je peux expliquer les 14 pi\u00e8ges, donner une note pour 195 pays ou commenter votre analyse. Essayez \u00ab c\u2019est quoi la reconduction tacite ? \u00bb ou \u00ab contrats en Allemagne \u00bb.',
-      country: '{country} : {note}', nla: 'Ceci n\u2019est pas un conseil juridique.', ph: 'Demandez \u00e0 Tila\u2026',
-      K: 'syst\u00e8me de common law. Les juges appliquent le texte \u00e0 la lettre et suivent la jurisprudence : pr\u00e9cisez plafonds de responsabilit\u00e9, r\u00e9siliation et droit applicable.',
-      C: 'syst\u00e8me de droit civil. Le code civil comble les lacunes et le juge peut r\u00e9duire les clauses abusives ; p\u00e9nalit\u00e9s et non-concurrence sont souvent r\u00e9duites.',
-      M: 'syst\u00e8me mixte. Common law et droit civil peuvent s\u2019appliquer, parfois selon la r\u00e9gion : nommez express\u00e9ment le droit applicable et le tribunal.',
-      I: 'des principes du droit islamique peuvent s\u2019appliquer avec la loi. Les int\u00e9r\u00eats et certaines p\u00e9nalit\u00e9s peuvent \u00eatre inapplicables ; pr\u00e9f\u00e9rez des frais fixes.' },
-    de: { greet: 'Hallo, ich bin Tila. Lade einen Vertrag hoch und ich pr\u00fcfe ihn, oder frag mich zu jeder Klausel und jedem Land.',
-      how: 'Lade ein PDF hoch: Redline pr\u00fcft es in unter zwei Sekunden, mit Risikowert von 12 bis 99, jeder Falle und einer sicheren Formulierung.',
+    es: { greet: 'Hola, soy Tila. Sube un contrato y lo analizo, o pregúntame por cualquier cláusula o país.',
+      how: 'Sube un PDF y Redline lo analiza en menos de dos segundos: una puntuación de riesgo de 12 a 99, cada trampa y una redacción segura para cada una.',
+      channels: 'También puedes enviar el PDF por SMS al {sms}, por correo a {email} o compartirlo con Redline desde tu móvil.',
+      price: 'Gratis incluye 3 análisis al mes. Pro cuesta 19 $ al mes, ilimitado. Team cuesta 49 $ al mes para 5 personas.',
+      trap: 'Sobre “{label}”: {why}\nRedacción más segura: {fix}', last: 'Tu último análisis dio {risk}/100 con {n} trampas: {list}. Pregúntame por cualquiera.',
+      none: 'Aún no has analizado nada. Sube un contrato y te lo explico.', create: 'Rellena los seis campos de “Create a safe contract” y redacto uno con riesgo 12.',
+      fallback: 'Puedo explicar las 14 trampas, darte una nota sobre contratos en 195 países o repasar tu análisis. Prueba “¿qué es la renovación automática?” o “contratos en Alemania”.',
+      country: '{country}: {note}', nla: 'No es asesoramiento legal.', ph: 'Pregúntale a Tila…',
+      K: 'sistema de common law. Los tribunales aplican el texto al pie de la letra y siguen precedentes: fija límites de responsabilidad, terminación y ley aplicable.',
+      C: 'sistema de derecho civil. El código civil llena vacíos y los jueces pueden moderar cláusulas abusivas; las penalizaciones y no competencia se reducen a menudo.',
+      M: 'sistema mixto. Pueden aplicarse reglas de common law y de derecho civil, a veces por región: indica expresamente la ley y los tribunales.',
+      I: 'pueden aplicarse principios del derecho islámico junto a la ley. Los intereses y algunas penalizaciones pueden no ser exigibles; mejor tarifas fijas.' },
+    fr: { greet: 'Bonjour, je suis Tila. Déposez un contrat et je l’analyse, ou posez-moi une question sur une clause ou un pays.',
+      how: 'Déposez un PDF : Redline l’analyse en moins de deux secondes, avec un score de risque de 12 à 99, chaque piège et une rédaction sûre pour chacun.',
+      channels: 'Vous pouvez aussi envoyer le PDF par SMS au {sms}, par e-mail à {email}, ou le partager vers Redline depuis votre téléphone.',
+      price: 'Gratuit : 3 analyses par mois. Pro : 19 $ par mois, illimité. Team : 49 $ par mois pour 5 personnes.',
+      trap: 'À propos de « {label} » : {why}\nRédaction plus sûre : {fix}', last: 'Votre dernière analyse : {risk}/100 avec {n} pièges : {list}. Demandez-moi le détail.',
+      none: 'Vous n’avez encore rien analysé. Déposez un contrat et je vous guide.', create: 'Remplissez les six champs de « Create a safe contract » et je rédige un contrat à risque 12.',
+      fallback: 'Je peux expliquer les 14 pièges, donner une note pour 195 pays ou commenter votre analyse. Essayez « c’est quoi la reconduction tacite ? » ou « contrats en Allemagne ».',
+      country: '{country} : {note}', nla: 'Ceci n’est pas un conseil juridique.', ph: 'Demandez à Tila…',
+      K: 'système de common law. Les juges appliquent le texte à la lettre et suivent la jurisprudence : précisez plafonds de responsabilité, résiliation et droit applicable.',
+      C: 'système de droit civil. Le code civil comble les lacunes et le juge peut réduire les clauses abusives ; pénalités et non-concurrence sont souvent réduites.',
+      M: 'système mixte. Common law et droit civil peuvent s’appliquer, parfois selon la région : nommez expressément le droit applicable et le tribunal.',
+      I: 'des principes du droit islamique peuvent s’appliquer avec la loi. Les intérêts et certaines pénalités peuvent être inapplicables ; préférez des frais fixes.' },
+    de: { greet: 'Hallo, ich bin Tila. Lade einen Vertrag hoch und ich prüfe ihn, oder frag mich zu jeder Klausel und jedem Land.',
+      how: 'Lade ein PDF hoch: Redline prüft es in unter zwei Sekunden, mit Risikowert von 12 bis 99, jeder Falle und einer sicheren Formulierung.',
       channels: 'Du kannst das PDF auch per SMS an {sms} oder per E-Mail an {email} schicken oder es vom Handy aus mit Redline teilen.',
-      price: 'Free: 3 Pr\u00fcfungen pro Monat. Pro: 19 $ im Monat, unbegrenzt. Team: 49 $ im Monat f\u00fcr 5 Personen.',
-      trap: 'Zu \u201e{label}\u201c: {why}\nSicherere Formulierung: {fix}', last: 'Deine letzte Pr\u00fcfung: {risk}/100 mit {n} Fallen: {list}. Frag mich zu jeder davon.',
-      none: 'Du hast noch nichts gepr\u00fcft. Lade einen Vertrag hoch, dann f\u00fchre ich dich durch.', create: 'F\u00fclle die sechs Felder unter \u201eCreate a safe contract\u201c aus, dann entwerfe ich einen Vertrag mit Risiko 12.',
-      fallback: 'Ich erkl\u00e4re alle 14 Fallen, gebe Hinweise f\u00fcr 195 L\u00e4nder oder gehe deine Pr\u00fcfung durch. Probier \u201eWas ist automatische Verl\u00e4ngerung?\u201c oder \u201eVertr\u00e4ge in Frankreich\u201c.',
-      country: '{country}: {note}', nla: 'Keine Rechtsberatung.', ph: 'Frag Tila\u2026',
-      K: 'Common-Law-System. Gerichte halten sich eng an den Wortlaut und an Pr\u00e4zedenzf\u00e4lle: Haftungsgrenzen, K\u00fcndigung und anwendbares Recht ausdr\u00fccklich regeln.',
-      C: 'Zivilrechtssystem. Das Gesetzbuch f\u00fcllt L\u00fccken, Gerichte k\u00f6nnen unfaire Klauseln k\u00fcrzen; Vertragsstrafen und Wettbewerbsverbote werden oft reduziert.',
-      M: 'Mischsystem. Common Law und Zivilrecht k\u00f6nnen gelten, teils je nach Region: anwendbares Recht und Gerichtsstand ausdr\u00fccklich festlegen.',
-      I: 'Grunds\u00e4tze des islamischen Rechts k\u00f6nnen neben dem Gesetz gelten. Zinsen und manche Vertragsstrafen sind evtl. nicht durchsetzbar; Festbetr\u00e4ge sind sicherer.' },
-    pt: { greet: 'Ol\u00e1, eu sou a Tila. Envie um contrato e eu analiso, ou pergunte sobre qualquer cl\u00e1usula ou pa\u00eds.',
-      how: 'Envie um PDF e o Redline analisa em menos de dois segundos: nota de risco de 12 a 99, cada armadilha e uma reda\u00e7\u00e3o segura para cada uma.',
-      channels: 'Voc\u00ea tamb\u00e9m pode mandar o PDF por SMS para {sms}, por e-mail para {email} ou compartilhar com o Redline pelo celular.',
-      price: 'Gr\u00e1tis: 3 an\u00e1lises por m\u00eas. Pro: US$ 19 por m\u00eas, ilimitado. Team: US$ 49 por m\u00eas para 5 pessoas.',
-      trap: 'Sobre \u201c{label}\u201d: {why}\nReda\u00e7\u00e3o mais segura: {fix}', last: 'Sua \u00faltima an\u00e1lise deu {risk}/100 com {n} armadilhas: {list}. Pergunte sobre qualquer uma.',
-      none: 'Voc\u00ea ainda n\u00e3o analisou nada. Envie um contrato e eu explico.', create: 'Preencha os seis campos de \u201cCreate a safe contract\u201d e eu redijo um contrato com risco 12.',
-      fallback: 'Posso explicar as 14 armadilhas, dar uma nota sobre contratos em 195 pa\u00edses ou revisar sua an\u00e1lise. Tente \u201co que \u00e9 renova\u00e7\u00e3o autom\u00e1tica?\u201d ou \u201ccontratos na Alemanha\u201d.',
-      country: '{country}: {note}', nla: 'N\u00e3o \u00e9 aconselhamento jur\u00eddico.', ph: 'Pergunte \u00e0 Tila\u2026',
-      K: 'sistema de common law. Os tribunais seguem o texto e os precedentes: defina limites de responsabilidade, rescis\u00e3o e lei aplic\u00e1vel.',
-      C: 'sistema de direito civil. O c\u00f3digo civil preenche lacunas e o juiz pode reduzir cl\u00e1usulas abusivas; multas e n\u00e3o concorr\u00eancia costumam ser reduzidas.',
-      M: 'sistema misto. Regras de common law e de direito civil podem valer, \u00e0s vezes por regi\u00e3o: indique expressamente a lei e o foro.',
-      I: 'princ\u00edpios do direito isl\u00e2mico podem valer junto \u00e0 lei. Juros e algumas multas podem n\u00e3o ser exig\u00edveis; prefira valores fixos.' },
+      price: 'Free: 3 Prüfungen pro Monat. Pro: 19 $ im Monat, unbegrenzt. Team: 49 $ im Monat für 5 Personen.',
+      trap: 'Zu „{label}“: {why}\nSicherere Formulierung: {fix}', last: 'Deine letzte Prüfung: {risk}/100 mit {n} Fallen: {list}. Frag mich zu jeder davon.',
+      none: 'Du hast noch nichts geprüft. Lade einen Vertrag hoch, dann führe ich dich durch.', create: 'Fülle die sechs Felder unter „Create a safe contract“ aus, dann entwerfe ich einen Vertrag mit Risiko 12.',
+      fallback: 'Ich erkläre alle 14 Fallen, gebe Hinweise für 195 Länder oder gehe deine Prüfung durch. Probier „Was ist automatische Verlängerung?“ oder „Verträge in Frankreich“.',
+      country: '{country}: {note}', nla: 'Keine Rechtsberatung.', ph: 'Frag Tila…',
+      K: 'Common-Law-System. Gerichte halten sich eng an den Wortlaut und an Präzedenzfälle: Haftungsgrenzen, Kündigung und anwendbares Recht ausdrücklich regeln.',
+      C: 'Zivilrechtssystem. Das Gesetzbuch füllt Lücken, Gerichte können unfaire Klauseln kürzen; Vertragsstrafen und Wettbewerbsverbote werden oft reduziert.',
+      M: 'Mischsystem. Common Law und Zivilrecht können gelten, teils je nach Region: anwendbares Recht und Gerichtsstand ausdrücklich festlegen.',
+      I: 'Grundsätze des islamischen Rechts können neben dem Gesetz gelten. Zinsen und manche Vertragsstrafen sind evtl. nicht durchsetzbar; Festbeträge sind sicherer.' },
+    pt: { greet: 'Olá, eu sou a Tila. Envie um contrato e eu analiso, ou pergunte sobre qualquer cláusula ou país.',
+      how: 'Envie um PDF e o Redline analisa em menos de dois segundos: nota de risco de 12 a 99, cada armadilha e uma redação segura para cada uma.',
+      channels: 'Você também pode mandar o PDF por SMS para {sms}, por e-mail para {email} ou compartilhar com o Redline pelo celular.',
+      price: 'Grátis: 3 análises por mês. Pro: US$ 19 por mês, ilimitado. Team: US$ 49 por mês para 5 pessoas.',
+      trap: 'Sobre “{label}”: {why}\nRedação mais segura: {fix}', last: 'Sua última análise deu {risk}/100 com {n} armadilhas: {list}. Pergunte sobre qualquer uma.',
+      none: 'Você ainda não analisou nada. Envie um contrato e eu explico.', create: 'Preencha os seis campos de “Create a safe contract” e eu redijo um contrato com risco 12.',
+      fallback: 'Posso explicar as 14 armadilhas, dar uma nota sobre contratos em 195 países ou revisar sua análise. Tente “o que é renovação automática?” ou “contratos na Alemanha”.',
+      country: '{country}: {note}', nla: 'Não é aconselhamento jurídico.', ph: 'Pergunte à Tila…',
+      K: 'sistema de common law. Os tribunais seguem o texto e os precedentes: defina limites de responsabilidade, rescisão e lei aplicável.',
+      C: 'sistema de direito civil. O código civil preenche lacunas e o juiz pode reduzir cláusulas abusivas; multas e não concorrência costumam ser reduzidas.',
+      M: 'sistema misto. Regras de common law e de direito civil podem valer, às vezes por região: indique expressamente a lei e o foro.',
+      I: 'princípios do direito islâmico podem valer junto à lei. Juros e algumas multas podem não ser exigíveis; prefira valores fixos.' },
     it: { greet: 'Ciao, sono Tila. Carica un contratto e lo analizzo, oppure chiedimi di qualsiasi clausola o paese.',
       how: 'Carica un PDF e Redline lo analizza in meno di due secondi: punteggio di rischio da 12 a 99, ogni trappola e una formulazione sicura per ciascuna.',
       channels: 'Puoi anche inviare il PDF via SMS al {sms}, via e-mail a {email} o condividerlo con Redline dal telefono.',
       price: 'Free: 3 analisi al mese. Pro: 19 $ al mese, illimitato. Team: 49 $ al mese per 5 persone.',
-      trap: 'Su \u201c{label}\u201d: {why}\nFormulazione pi\u00f9 sicura: {fix}', last: 'La tua ultima analisi: {risk}/100 con {n} trappole: {list}. Chiedimi di ognuna.',
-      none: 'Non hai ancora analizzato nulla. Carica un contratto e ti guido.', create: 'Compila i sei campi di \u201cCreate a safe contract\u201d e preparo un contratto con rischio 12.',
-      fallback: 'Posso spiegare le 14 trappole, dare una nota per 195 paesi o rivedere la tua analisi. Prova \u201ccos\u2019\u00e8 il rinnovo automatico?\u201d o \u201ccontratti in Germania\u201d.',
-      country: '{country}: {note}', nla: 'Non \u00e8 una consulenza legale.', ph: 'Chiedi a Tila\u2026',
-      K: 'sistema di common law. I giudici applicano il testo alla lettera e seguono i precedenti: definisci limiti di responsabilit\u00e0, recesso e legge applicabile.',
-      C: 'sistema di civil law. Il codice civile colma le lacune e il giudice pu\u00f2 ridurre le clausole vessatorie; penali e patti di non concorrenza sono spesso ridotti.',
+      trap: 'Su “{label}”: {why}\nFormulazione più sicura: {fix}', last: 'La tua ultima analisi: {risk}/100 con {n} trappole: {list}. Chiedimi di ognuna.',
+      none: 'Non hai ancora analizzato nulla. Carica un contratto e ti guido.', create: 'Compila i sei campi di “Create a safe contract” e preparo un contratto con rischio 12.',
+      fallback: 'Posso spiegare le 14 trappole, dare una nota per 195 paesi o rivedere la tua analisi. Prova “cos’è il rinnovo automatico?” o “contratti in Germania”.',
+      country: '{country}: {note}', nla: 'Non è una consulenza legale.', ph: 'Chiedi a Tila…',
+      K: 'sistema di common law. I giudici applicano il testo alla lettera e seguono i precedenti: definisci limiti di responsabilità, recesso e legge applicabile.',
+      C: 'sistema di civil law. Il codice civile colma le lacune e il giudice può ridurre le clausole vessatorie; penali e patti di non concorrenza sono spesso ridotti.',
       M: 'sistema misto. Possono valere regole di common law e di civil law, a volte per regione: indica espressamente legge e foro.',
       I: 'possono valere principi del diritto islamico accanto alla legge. Interessi e alcune penali possono non essere esigibili; meglio importi fissi.' },
     nl: { greet: 'Hoi, ik ben Tila. Upload een contract en ik scan het, of vraag me naar elke clausule of elk land.',
       how: 'Upload een pdf en Redline scant hem in minder dan twee seconden: een risicoscore van 12 tot 99, elke valkuil en een veilige herformulering.',
-      channels: 'Je kunt de pdf ook sms\u2019en naar {sms}, mailen naar {email} of vanaf je telefoon delen met Redline.',
+      channels: 'Je kunt de pdf ook sms’en naar {sms}, mailen naar {email} of vanaf je telefoon delen met Redline.',
       price: 'Gratis: 3 scans per maand. Pro: $19 per maand, onbeperkt. Team: $49 per maand voor 5 personen.',
-      trap: 'Over \u201c{label}\u201d: {why}\nVeiliger: {fix}', last: 'Je laatste scan: {risk}/100 met {n} valkuilen: {list}. Vraag me naar elk ervan.',
-      none: 'Je hebt nog niets gescand. Upload een contract en ik leg het uit.', create: 'Vul de zes velden bij \u201cCreate a safe contract\u201d in en ik stel een contract op met risico 12.',
-      fallback: 'Ik leg alle 14 valkuilen uit, geef een notitie voor 195 landen of loop je scan door. Probeer \u201cwat is stilzwijgende verlenging?\u201d of \u201ccontracten in Duitsland\u201d.',
-      country: '{country}: {note}', nla: 'Geen juridisch advies.', ph: 'Vraag het Tila\u2026',
+      trap: 'Over “{label}”: {why}\nVeiliger: {fix}', last: 'Je laatste scan: {risk}/100 met {n} valkuilen: {list}. Vraag me naar elk ervan.',
+      none: 'Je hebt nog niets gescand. Upload een contract en ik leg het uit.', create: 'Vul de zes velden bij “Create a safe contract” in en ik stel een contract op met risico 12.',
+      fallback: 'Ik leg alle 14 valkuilen uit, geef een notitie voor 195 landen of loop je scan door. Probeer “wat is stilzwijgende verlenging?” of “contracten in Duitsland”.',
+      country: '{country}: {note}', nla: 'Geen juridisch advies.', ph: 'Vraag het Tila…',
       K: 'common-lawsysteem. Rechters houden zich strak aan de tekst en aan precedenten: leg aansprakelijkheid, opzegging en toepasselijk recht vast.',
       C: 'civielrechtelijk systeem. Het wetboek vult gaten en rechters kunnen onredelijke bedingen matigen; boetes en concurrentiebedingen worden vaak beperkt.',
       M: 'gemengd systeem. Common law en civiel recht kunnen allebei gelden, soms per regio: noem het toepasselijk recht en de rechter expliciet.',
       I: 'beginselen van islamitisch recht kunnen naast de wet gelden. Rente en sommige boetes zijn mogelijk niet afdwingbaar; vaste bedragen zijn veiliger.' },
-    ar: { greet: '\u0645\u0631\u062d\u0628\u064b\u0627\u060c \u0623\u0646\u0627 \u062a\u064a\u0644\u0627. \u0627\u0631\u0641\u0639 \u0639\u0642\u062f\u064b\u0627 \u0648\u0633\u0623\u0641\u062d\u0635\u0647\u060c \u0623\u0648 \u0627\u0633\u0623\u0644\u0646\u064a \u0639\u0646 \u0623\u064a \u0628\u0646\u062f \u0623\u0648 \u0623\u064a \u062f\u0648\u0644\u0629.',
-      how: '\u0627\u0631\u0641\u0639 \u0645\u0644\u0641 PDF \u0648\u0633\u064a\u0641\u062d\u0635\u0647 Redline \u0641\u064a \u0623\u0642\u0644 \u0645\u0646 \u062b\u0627\u0646\u064a\u062a\u064a\u0646: \u062f\u0631\u062c\u0629 \u0645\u062e\u0627\u0637\u0631 \u0645\u0646 12 \u0625\u0644\u0649 99\u060c \u0648\u0643\u0644 \u0641\u062e\u060c \u0648\u0635\u064a\u0627\u063a\u0629 \u0622\u0645\u0646\u0629 \u0644\u0643\u0644 \u0645\u0646\u0647\u0627.',
-      channels: '\u064a\u0645\u0643\u0646\u0643 \u0623\u064a\u0636\u064b\u0627 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0645\u0644\u0641 \u0628\u0631\u0633\u0627\u0644\u0629 \u0646\u0635\u064a\u0629 \u0625\u0644\u0649 {sms} \u0623\u0648 \u0628\u0627\u0644\u0628\u0631\u064a\u062f \u0625\u0644\u0649 {email} \u0623\u0648 \u0645\u0634\u0627\u0631\u0643\u062a\u0647 \u0645\u0639 Redline \u0645\u0646 \u0647\u0627\u062a\u0641\u0643.',
-      price: '\u0627\u0644\u0645\u062c\u0627\u0646\u064a: 3 \u0641\u062d\u0648\u0635 \u0634\u0647\u0631\u064a\u064b\u0627. Pro: \u200f19 \u062f\u0648\u0644\u0627\u0631\u064b\u0627 \u0634\u0647\u0631\u064a\u064b\u0627 \u0628\u0644\u0627 \u062d\u062f\u0648\u062f. Team: \u200f49 \u062f\u0648\u0644\u0627\u0631\u064b\u0627 \u0634\u0647\u0631\u064a\u064b\u0627 \u0644\u0640 5 \u0623\u0634\u062e\u0627\u0635.',
-      trap: '\u0639\u0646 \u00ab{label}\u00bb: {why}\n\u0635\u064a\u0627\u063a\u0629 \u0623\u0643\u062b\u0631 \u0623\u0645\u0627\u0646\u064b\u0627: {fix}', last: '\u0622\u062e\u0631 \u0641\u062d\u0635: {risk}/100 \u0645\u0639 {n} \u0641\u062e\u0627\u062e: {list}.',
-      none: '\u0644\u0645 \u062a\u0641\u062d\u0635 \u0623\u064a \u0639\u0642\u062f \u0628\u0639\u062f. \u0627\u0631\u0641\u0639 \u0639\u0642\u062f\u064b\u0627 \u0648\u0633\u0623\u0634\u0631\u062d\u0647 \u0644\u0643.', create: '\u0627\u0645\u0644\u0623 \u0627\u0644\u062d\u0642\u0648\u0644 \u0627\u0644\u0633\u062a\u0629 \u0641\u064a \u00abCreate a safe contract\u00bb \u0648\u0633\u0623\u0643\u062a\u0628 \u0639\u0642\u062f\u064b\u0627 \u0628\u062f\u0631\u062c\u0629 \u0645\u062e\u0627\u0637\u0631 12.',
-      fallback: '\u0623\u0633\u062a\u0637\u064a\u0639 \u0634\u0631\u062d \u0627\u0644\u0641\u062e\u0627\u062e \u0627\u0644\u0640 14\u060c \u0623\u0648 \u0625\u0639\u0637\u0627\u0621 \u0645\u0644\u0627\u062d\u0638\u0629 \u0639\u0646 \u0627\u0644\u0639\u0642\u0648\u062f \u0641\u064a 195 \u062f\u0648\u0644\u0629\u060c \u0623\u0648 \u0634\u0631\u062d \u0641\u062d\u0635\u0643.',
-      country: '{country}: {note}', nla: '\u0647\u0630\u0647 \u0644\u064a\u0633\u062a \u0627\u0633\u062a\u0634\u0627\u0631\u0629 \u0642\u0627\u0646\u0648\u0646\u064a\u0629.', ph: '\u0627\u0633\u0623\u0644 \u062a\u064a\u0644\u0627\u2026',
-      K: '\u0646\u0638\u0627\u0645 \u0627\u0644\u0642\u0627\u0646\u0648\u0646 \u0627\u0644\u0639\u0627\u0645: \u062a\u0644\u062a\u0632\u0645 \u0627\u0644\u0645\u062d\u0627\u0643\u0645 \u0628\u0646\u0635 \u0627\u0644\u0639\u0642\u062f \u0648\u0628\u0627\u0644\u0633\u0648\u0627\u0628\u0642\u060c \u0644\u0630\u0627 \u062d\u062f\u062f \u0633\u0642\u0641 \u0627\u0644\u0645\u0633\u0624\u0648\u0644\u064a\u0629 \u0648\u0627\u0644\u0625\u0646\u0647\u0627\u0621 \u0648\u0627\u0644\u0642\u0627\u0646\u0648\u0646 \u0627\u0644\u0648\u0627\u062c\u0628.',
-      C: '\u0646\u0638\u0627\u0645 \u0627\u0644\u0642\u0627\u0646\u0648\u0646 \u0627\u0644\u0645\u062f\u0646\u064a: \u064a\u0633\u062f \u0627\u0644\u0642\u0627\u0646\u0648\u0646 \u0627\u0644\u0645\u062f\u0646\u064a \u0627\u0644\u062b\u063a\u0631\u0627\u062a \u0648\u064a\u0645\u0643\u0646 \u0644\u0644\u0645\u062d\u0643\u0645\u0629 \u062a\u062e\u0641\u064a\u0641 \u0627\u0644\u0634\u0631\u0648\u0637 \u0627\u0644\u062c\u0627\u0626\u0631\u0629.',
-      M: '\u0646\u0638\u0627\u0645 \u0645\u062e\u062a\u0644\u0637: \u0642\u062f \u062a\u0646\u0637\u0628\u0642 \u0642\u0648\u0627\u0639\u062f \u0627\u0644\u0642\u0627\u0646\u0648\u0646 \u0627\u0644\u0639\u0627\u0645 \u0648\u0627\u0644\u0645\u062f\u0646\u064a\u060c \u0644\u0630\u0627 \u0627\u0630\u0643\u0631 \u0627\u0644\u0642\u0627\u0646\u0648\u0646 \u0648\u0627\u0644\u0645\u062d\u0643\u0645\u0629 \u0635\u0631\u0627\u062d\u0629.',
-      I: '\u0642\u062f \u062a\u0646\u0637\u0628\u0642 \u0645\u0628\u0627\u062f\u0626 \u0627\u0644\u0634\u0631\u064a\u0639\u0629 \u0625\u0644\u0649 \u062c\u0627\u0646\u0628 \u0627\u0644\u0642\u0627\u0646\u0648\u0646\u061b \u0627\u0644\u0641\u0648\u0627\u0626\u062f \u0648\u0628\u0639\u0636 \u0627\u0644\u063a\u0631\u0627\u0645\u0627\u062a \u0642\u062f \u0644\u0627 \u062a\u0643\u0648\u0646 \u0646\u0627\u0641\u0630\u0629\u060c \u0648\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062b\u0627\u0628\u062a\u0629 \u0623\u0643\u062b\u0631 \u0623\u0645\u0627\u0646\u064b\u0627.' },
-    zh: { greet: '\u4f60\u597d\uff0c\u6211\u662f Tila\u3002\u4e0a\u4f20\u5408\u540c\uff0c\u6211\u6765\u626b\u63cf\uff1b\u4e5f\u53ef\u4ee5\u95ee\u6211\u4efb\u4f55\u6761\u6b3e\u6216\u56fd\u5bb6\u7684\u95ee\u9898\u3002',
-      how: '\u4e0a\u4f20 PDF\uff0cRedline \u4e24\u79d2\u5185\u5b8c\u6210\u626b\u63cf\uff1a12 \u5230 99 \u7684\u98ce\u9669\u5206\u3001\u6bcf\u4e2a\u9677\u9631\uff0c\u4ee5\u53ca\u5bf9\u5e94\u7684\u5b89\u5168\u6539\u5199\u3002',
-      channels: '\u4e5f\u53ef\u4ee5\u628a PDF \u77ed\u4fe1\u53d1\u5230 {sms}\u3001\u90ae\u4ef6\u53d1\u5230 {email}\uff0c\u6216\u4ece\u624b\u673a\u5206\u4eab\u5230 Redline\u3002',
-      price: '\u514d\u8d39\u7248\u6bcf\u6708 3 \u6b21\u626b\u63cf\u3002Pro \u6bcf\u6708 19 \u7f8e\u5143\uff0c\u4e0d\u9650\u6b21\u3002Team \u6bcf\u6708 49 \u7f8e\u5143\uff0c5 \u4e2a\u5e2d\u4f4d\u3002',
-      trap: '\u5173\u4e8e\u300c{label}\u300d\uff1a{why}\n\u66f4\u5b89\u5168\u7684\u5199\u6cd5\uff1a{fix}', last: '\u4f60\u4e0a\u6b21\u7684\u626b\u63cf\uff1a{risk}/100\uff0c{n} \u4e2a\u9677\u9631\uff1a{list}\u3002',
-      none: '\u4f60\u8fd8\u6ca1\u6709\u626b\u63cf\u8fc7\u5408\u540c\u3002\u4e0a\u4f20\u4e00\u4efd\uff0c\u6211\u6765\u8bb2\u89e3\u3002', create: '\u586b\u5199\u300cCreate a safe contract\u300d\u4e2d\u7684\u516d\u4e2a\u5b57\u6bb5\uff0c\u6211\u4f1a\u8d77\u8349\u4e00\u4efd\u98ce\u9669\u5206\u4e3a 12 \u7684\u5408\u540c\u3002',
-      fallback: '\u6211\u53ef\u4ee5\u89e3\u91ca 14 \u79cd\u9677\u9631\u3001\u63d0\u4f9b 195 \u4e2a\u56fd\u5bb6\u7684\u5408\u540c\u63d0\u793a\uff0c\u6216\u8bb2\u89e3\u4f60\u7684\u626b\u63cf\u7ed3\u679c\u3002',
-      country: '{country}\uff1a{note}', nla: '\u8fd9\u4e0d\u662f\u6cd5\u5f8b\u610f\u89c1\u3002', ph: '\u95ee Tila\u2026',
-      K: '\u666e\u901a\u6cd5\u4f53\u7cfb\u3002\u6cd5\u9662\u4e25\u683c\u6309\u5408\u540c\u6587\u5b57\u548c\u5224\u4f8b\u5904\u7406\uff0c\u8bf7\u5199\u660e\u8d23\u4efb\u4e0a\u9650\u3001\u89e3\u7ea6\u548c\u9002\u7528\u6cd5\u5f8b\u3002',
-      C: '\u5927\u9646\u6cd5\u4f53\u7cfb\u3002\u6c11\u6cd5\u5178\u53ef\u586b\u8865\u7a7a\u767d\uff0c\u6cd5\u9662\u53ef\u8c03\u6574\u4e0d\u516c\u5e73\u6761\u6b3e\uff0c\u8fdd\u7ea6\u91d1\u548c\u7ade\u4e1a\u9650\u5236\u5e38\u88ab\u8c03\u4f4e\u3002',
-      M: '\u6df7\u5408\u6cd5\u7cfb\u3002\u666e\u901a\u6cd5\u548c\u5927\u9646\u6cd5\u89c4\u5219\u53ef\u80fd\u5e76\u5b58\uff0c\u8bf7\u660e\u786e\u7ea6\u5b9a\u9002\u7528\u6cd5\u5f8b\u548c\u7ba1\u8f96\u6cd5\u9662\u3002',
-      I: '\u4f0a\u65af\u5170\u6cd5\u539f\u5219\u53ef\u80fd\u4e0e\u6210\u6587\u6cd5\u5e76\u884c\u9002\u7528\uff0c\u5229\u606f\u548c\u90e8\u5206\u8fdd\u7ea6\u91d1\u53ef\u80fd\u65e0\u6cd5\u6267\u884c\uff0c\u56fa\u5b9a\u8d39\u7528\u66f4\u7a33\u59a5\u3002' },
-    ja: { greet: '\u3053\u3093\u306b\u3061\u306f\u3001Tila \u3067\u3059\u3002\u5951\u7d04\u66f8\u3092\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3059\u308c\u3070\u30b9\u30ad\u30e3\u30f3\u3057\u307e\u3059\u3002\u6761\u9805\u3084\u56fd\u306b\u3064\u3044\u3066\u3082\u8cea\u554f\u3067\u304d\u307e\u3059\u3002',
-      how: 'PDF \u3092\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3059\u308b\u3068\u3001Redline \u304c 2 \u79d2\u4ee5\u5185\u306b\u30b9\u30ad\u30e3\u30f3\u3057\u3001\u30ea\u30b9\u30af\u30b9\u30b3\u30a2\uff0812\u301c99\uff09\u3068\u5404\u30c8\u30e9\u30c3\u30d7\u306e\u5b89\u5168\u306a\u66f8\u304d\u63db\u3048\u3092\u793a\u3057\u307e\u3059\u3002',
-      channels: 'PDF \u3092 {sms} \u306b SMS \u3067\u9001\u308b\u3001{email} \u306b\u30e1\u30fc\u30eb\u3059\u308b\u3001\u307e\u305f\u306f\u30b9\u30de\u30db\u304b\u3089 Redline \u306b\u5171\u6709\u3059\u308b\u3053\u3068\u3082\u3067\u304d\u307e\u3059\u3002',
-      price: '\u7121\u6599\u30d7\u30e9\u30f3\u306f\u6708 3 \u56de\u3002Pro \u306f\u6708 19 \u30c9\u30eb\u3067\u7121\u5236\u9650\u3002Team \u306f\u6708 49 \u30c9\u30eb\u3067 5 \u5e2d\u3067\u3059\u3002',
-      trap: '\u300c{label}\u300d\u306b\u3064\u3044\u3066\uff1a{why}\n\u3088\u308a\u5b89\u5168\u306a\u6587\u8a00\uff1a{fix}', last: '\u524d\u56de\u306e\u30b9\u30ad\u30e3\u30f3\uff1a{risk}/100\u3001\u30c8\u30e9\u30c3\u30d7 {n} \u4ef6\uff1a{list}\u3002',
-      none: '\u307e\u3060\u30b9\u30ad\u30e3\u30f3\u3057\u3066\u3044\u307e\u305b\u3093\u3002\u5951\u7d04\u66f8\u3092\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3057\u3066\u304f\u3060\u3055\u3044\u3002', create: '\u300cCreate a safe contract\u300d\u306e 6 \u9805\u76ee\u3092\u5165\u529b\u3059\u308b\u3068\u3001\u30ea\u30b9\u30af 12 \u306e\u5951\u7d04\u66f8\u3092\u4f5c\u6210\u3057\u307e\u3059\u3002',
-      fallback: '14 \u7a2e\u985e\u306e\u30c8\u30e9\u30c3\u30d7\u306e\u8aac\u660e\u3001195 \u304b\u56fd\u306e\u5951\u7d04\u30e1\u30e2\u3001\u30b9\u30ad\u30e3\u30f3\u7d50\u679c\u306e\u89e3\u8aac\u304c\u3067\u304d\u307e\u3059\u3002',
-      country: '{country}\uff1a{note}', nla: '\u6cd5\u7684\u52a9\u8a00\u3067\u306f\u3042\u308a\u307e\u305b\u3093\u3002', ph: 'Tila \u306b\u8cea\u554f\u2026',
-      K: '\u82f1\u7c73\u6cd5\u7cfb\u3002\u88c1\u5224\u6240\u306f\u6587\u8a00\u3068\u5224\u4f8b\u3092\u91cd\u8996\u3059\u308b\u306e\u3067\u3001\u8cac\u4efb\u4e0a\u9650\u30fb\u89e3\u9664\u30fb\u6e96\u62e0\u6cd5\u3092\u660e\u8a18\u3057\u307e\u3057\u3087\u3046\u3002',
-      C: '\u5927\u9678\u6cd5\u7cfb\u3002\u6c11\u6cd5\u304c\u6b20\u3051\u3092\u88dc\u3044\u3001\u4e0d\u5f53\u306a\u6761\u9805\u306f\u88c1\u5224\u6240\u304c\u6e1b\u984d\u3067\u304d\u307e\u3059\u3002\u9055\u7d04\u91d1\u3084\u7af6\u696d\u907f\u6b62\u306f\u6e1b\u3089\u3055\u308c\u308b\u3053\u3068\u304c\u591a\u3044\u3067\u3059\u3002',
-      M: '\u6df7\u5408\u6cd5\u7cfb\u3002\u82f1\u7c73\u6cd5\u3068\u5927\u9678\u6cd5\u306e\u4e21\u65b9\u304c\u9069\u7528\u3055\u308c\u5f97\u308b\u306e\u3067\u3001\u6e96\u62e0\u6cd5\u3068\u7ba1\u8f44\u88c1\u5224\u6240\u3092\u660e\u8a18\u3057\u307e\u3057\u3087\u3046\u3002',
-      I: '\u30a4\u30b9\u30e9\u30e0\u6cd5\u306e\u539f\u5247\u304c\u6cd5\u4ee4\u3068\u4e26\u3093\u3067\u9069\u7528\u3055\u308c\u5f97\u307e\u3059\u3002\u5229\u606f\u3084\u4e00\u90e8\u306e\u9055\u7d04\u91d1\u306f\u7121\u52b9\u306e\u5834\u5408\u304c\u3042\u308b\u306e\u3067\u3001\u56fa\u5b9a\u6599\u91d1\u304c\u5b89\u5168\u3067\u3059\u3002' },
+    ar: { greet: 'مرحبًا، أنا تيلا. ارفع عقدًا وسأفحصه، أو اسألني عن أي بند أو أي دولة.',
+      how: 'ارفع ملف PDF وسيفحصه Redline في أقل من ثانيتين: درجة مخاطر من 12 إلى 99، وكل فخ، وصياغة آمنة لكل منها.',
+      channels: 'يمكنك أيضًا إرسال الملف برسالة نصية إلى {sms} أو بالبريد إلى {email} أو مشاركته مع Redline من هاتفك.',
+      price: 'المجاني: 3 فحوص شهريًا. Pro: \u200f19 دولارًا شهريًا بلا حدود. Team: \u200f49 دولارًا شهريًا لـ 5 أشخاص.',
+      trap: 'عن «{label}»: {why}\nصياغة أكثر أمانًا: {fix}', last: 'آخر فحص: {risk}/100 مع {n} فخاخ: {list}.',
+      none: 'لم تفحص أي عقد بعد. ارفع عقدًا وسأشرحه لك.', create: 'املأ الحقول الستة في «Create a safe contract» وسأكتب عقدًا بدرجة مخاطر 12.',
+      fallback: 'أستطيع شرح الفخاخ الـ 14، أو إعطاء ملاحظة عن العقود في 195 دولة، أو شرح فحصك.',
+      country: '{country}: {note}', nla: 'هذه ليست استشارة قانونية.', ph: 'اسأل تيلا…',
+      K: 'نظام القانون العام: تلتزم المحاكم بنص العقد وبالسوابق، لذا حدد سقف المسؤولية والإنهاء والقانون الواجب.',
+      C: 'نظام القانون المدني: يسد القانون المدني الثغرات ويمكن للمحكمة تخفيف الشروط الجائرة.',
+      M: 'نظام مختلط: قد تنطبق قواعد القانون العام والمدني، لذا اذكر القانون والمحكمة صراحة.',
+      I: 'قد تنطبق مبادئ الشريعة إلى جانب القانون؛ الفوائد وبعض الغرامات قد لا تكون نافذة، والرسوم الثابتة أكثر أمانًا.' },
+    zh: { greet: '你好，我是 Tila。上传合同，我来扫描；也可以问我任何条款或国家的问题。',
+      how: '上传 PDF，Redline 两秒内完成扫描：12 到 99 的风险分、每个陷阱，以及对应的安全改写。',
+      channels: '也可以把 PDF 短信发到 {sms}、邮件发到 {email}，或从手机分享到 Redline。',
+      price: '免费版每月 3 次扫描。Pro 每月 19 美元，不限次。Team 每月 49 美元，5 个席位。',
+      trap: '关于「{label}」：{why}\n更安全的写法：{fix}', last: '你上次的扫描：{risk}/100，{n} 个陷阱：{list}。',
+      none: '你还没有扫描过合同。上传一份，我来讲解。', create: '填写「Create a safe contract」中的六个字段，我会起草一份风险分为 12 的合同。',
+      fallback: '我可以解释 14 种陷阱、提供 195 个国家的合同提示，或讲解你的扫描结果。',
+      country: '{country}：{note}', nla: '这不是法律意见。', ph: '问 Tila…',
+      K: '普通法体系。法院严格按合同文字和判例处理，请写明责任上限、解约和适用法律。',
+      C: '大陆法体系。民法典可填补空白，法院可调整不公平条款，违约金和竞业限制常被调低。',
+      M: '混合法系。普通法和大陆法规则可能并存，请明确约定适用法律和管辖法院。',
+      I: '伊斯兰法原则可能与成文法并行适用，利息和部分违约金可能无法执行，固定费用更稳妥。' },
+    ja: { greet: 'こんにちは、Tila です。契約書をアップロードすればスキャンします。条項や国についても質問できます。',
+      how: 'PDF をアップロードすると、Redline が 2 秒以内にスキャンし、リスクスコア（12〜99）と各トラップの安全な書き換えを示します。',
+      channels: 'PDF を {sms} に SMS で送る、{email} にメールする、またはスマホから Redline に共有することもできます。',
+      price: '無料プランは月 3 回。Pro は月 19 ドルで無制限。Team は月 49 ドルで 5 席です。',
+      trap: '「{label}」について：{why}\nより安全な文言：{fix}', last: '前回のスキャン：{risk}/100、トラップ {n} 件：{list}。',
+      none: 'まだスキャンしていません。契約書をアップロードしてください。', create: '「Create a safe contract」の 6 項目を入力すると、リスク 12 の契約書を作成します。',
+      fallback: '14 種類のトラップの説明、195 か国の契約メモ、スキャン結果の解説ができます。',
+      country: '{country}：{note}', nla: '法的助言ではありません。', ph: 'Tila に質問…',
+      K: '英米法系。裁判所は文言と判例を重視するので、責任上限・解除・準拠法を明記しましょう。',
+      C: '大陸法系。民法が欠けを補い、不当な条項は裁判所が減額できます。違約金や競業避止は減らされることが多いです。',
+      M: '混合法系。英米法と大陸法の両方が適用され得るので、準拠法と管轄裁判所を明記しましょう。',
+      I: 'イスラム法の原則が法令と並んで適用され得ます。利息や一部の違約金は無効の場合があるので、固定料金が安全です。' },
   };
 
   function detectInputLang(text) {
     const s = String(text || '');
-    if (/[\u0600-\u06FF]/.test(s)) return 'ar';
-    if (/[\u3040-\u30FF]/.test(s)) return 'ja';
-    if (/[\u4E00-\u9FFF]/.test(s)) return 'zh';
-    const words = s.toLowerCase().match(/[a-z\u00c0-\u00ff']+/g) || [];
+    if (/[\u0600-ۿ]/.test(s)) return 'ar';
+    if (/[\u3040-ヿ]/.test(s)) return 'ja';
+    if (/[一-鿿]/.test(s)) return 'zh';
+    const words = s.toLowerCase().match(/[a-zÀ-ÿ']+/g) || [];
     const stop = {
       en: 'the a an and is are of to in for what how my your it this that do does can',
-      es: 'el la los las de que y en un una por para es qu\u00e9 c\u00f3mo mi contrato est\u00e1 puedo',
-      fr: 'le la les de des et est un une pour que dans quoi comment mon contrat c\u2019est je',
-      de: 'der die das und ist ein eine nicht f\u00fcr wie was mein vertrag mit ich',
-      pt: 'o a os as de que e em um uma para \u00e9 como meu contrato n\u00e3o voc\u00ea posso',
-      it: 'il lo la gli le di che e \u00e8 un una per come cosa mio contratto posso',
+      es: 'el la los las de que y en un una por para es qué cómo mi contrato está puedo',
+      fr: 'le la les de des et est un une pour que dans quoi comment mon contrat c’est je',
+      de: 'der die das und ist ein eine nicht für wie was mein vertrag mit ich',
+      pt: 'o a os as de que e em um uma para é como meu contrato não você posso',
+      it: 'il lo la gli le di che e è un una per come cosa mio contratto posso',
       nl: 'de het een en is van dat niet voor hoe wat mijn contract met ik',
     };
     const score = {};
@@ -531,10 +531,10 @@
       const set = new Set(list.split(' '));
       score[lang] = words.filter(w => set.has(w)).length;
     }
-    if (/[\u00f1\u00bf\u00a1]/.test(s)) score.es += 2;
-    if (/[\u00e7\u00e8\u00ea\u00e2\u00ee\u00f4\u0153]/.test(s)) score.fr += 2;
-    if (/[\u00e4\u00f6\u00fc\u00df]/.test(s)) score.de += 2;
-    if (/[\u00e3\u00f5]/.test(s)) score.pt += 2;
+    if (/[ñ¿¡]/.test(s)) score.es += 2;
+    if (/[çèêâîôœ]/.test(s)) score.fr += 2;
+    if (/[äöüß]/.test(s)) score.de += 2;
+    if (/[ãõ]/.test(s)) score.pt += 2;
     const best = Object.entries(score).sort((a, b) => b[1] - a[1])[0];
     return best && best[1] > 0 ? best[0] : 'en';
   }
@@ -590,7 +590,7 @@
       <div class="bar${safe ? ' safe' : ''}" role="img" aria-label="Risk ${r.risk} out of 100"><i></i></div>
       ${r.traps.length ? `<div class="traps">${r.traps.map(t => `
         <div class="trap"><h4>${esc(t.label)}</h4><p class="why">${esc(t.why)}</p>
-          ${showQuotes && t.quote ? `<q>\u2026${esc(t.quote)}\u2026</q>` : ''}
+          ${showQuotes && t.quote ? `<q>…${esc(t.quote)}…</q>` : ''}
           <div class="fix"><b>Safe rewrite</b>${esc(t.fix)}</div></div>`).join('')}</div>` : ''}
       ${draft ? `<pre class="draft">${esc(draft)}</pre>` : ''}
       <div class="actions">
@@ -608,7 +608,7 @@
   function renderScanning(name) {
     result.hidden = false;
     result.innerHTML = `<div class="scanning"><p class="meta">${esc(name)}</p>
-      <p style="font:600 28px var(--serif)">Scanning for 14 traps\u2026</p><div class="bar"><i></i></div></div>`;
+      <p style="font:600 28px var(--serif)">Scanning for 14 traps…</p><div class="bar"><i></i></div></div>`;
     requestAnimationFrame(() => requestAnimationFrame(() => { result.querySelector('.bar>i').style.width = '100%'; }));
     result.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -632,7 +632,7 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  // ---- Upload \u2192 1.8s auto-scan ----
+  // ---- Upload → 1.8s auto-scan ----
   let pdfjs;
   function loadPdfJs() {
     if (pdfjs) return pdfjs;
@@ -669,7 +669,7 @@
       if (String(text).trim().length < 40) return renderError(name, 'This PDF has no readable text. It may be a photo or a scan; try the original file.');
       renderResult(scan(text), { name });
     } catch {
-      renderError(name, 'Redline couldn\u2019t read that file. Try a PDF or a text file.');
+      renderError(name, 'Redline couldn’t read that file. Try a PDF or a text file.');
     }
   }
 
@@ -691,7 +691,7 @@
   document.querySelectorAll('[data-sample]').forEach(b => b.addEventListener('click', runSample));
   document.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); document.getElementById('scan').scrollIntoView({ behavior: 'smooth' }); fileInput.click(); }));
 
-  // ---- Create \u2192 safe draft ----
+  // ---- Create → safe draft ----
   function draftContract(f) {
     const me = f.me.trim(), them = f.them.trim(), days = parseInt(f.days, 10) || 14, fee = f.fee.trim() || 'the agreed fee';
     const nda = /NDA/.test(f.type);
@@ -702,14 +702,14 @@
         ? '1. Purpose. The parties will share information to evaluate working together.'
         : `1. Services. ${me} will provide the services described in the Statement of Work signed by both parties.`,
       nda
-        ? '2. Confidentiality. Each party keeps the other\u2019s confidential information private and uses it only for the Purpose. These obligations are mutual and last 3 years after the last disclosure.'
+        ? '2. Confidentiality. Each party keeps the other’s confidential information private and uses it only for the Purpose. These obligations are mutual and last 3 years after the last disclosure.'
         : `2. Fees. ${them} pays ${fee}. Invoices are due within ${days} days of receipt.`,
       nda
-        ? '3. Return. On request, each party returns or deletes the other\u2019s information.'
+        ? '3. Return. On request, each party returns or deletes the other’s information.'
         : `3. Ownership. ${them} owns the deliverables in the Statement of Work once paid in full. ${me} keeps pre-existing materials and general know-how.`,
       '4. Term. This Agreement lasts 12 months and renews only by written agreement of both parties.',
-      '5. Ending. Either party may end this Agreement with 30 days\u2019 written notice. Work completed up to that date is paid.',
-      '6. Liability. Each party\u2019s total liability is capped at the fees paid in the prior 12 months, except for fraud, gross negligence or wilful misconduct.',
+      '5. Ending. Either party may end this Agreement with 30 days’ written notice. Work completed up to that date is paid.',
+      '6. Liability. Each party’s total liability is capped at the fees paid in the prior 12 months, except for fraud, gross negligence or wilful misconduct.',
       '7. Changes. Changes to this Agreement must be in writing and signed by both parties. Transfer of this Agreement requires the written consent of both parties.',
       `8. Law. The law of ${f.country} applies, and its courts hear any dispute after 30 days of good-faith negotiation.`,
       '',
@@ -725,7 +725,7 @@
     renderScanning(`Drafting: ${f.type}`);
     await wait(1800);
     const r = scan(draft);
-    renderResult(r, { name: `Safe draft: ${f.type} \u00b7 ${f.country}`, draft });
+    renderResult(r, { name: `Safe draft: ${f.type} · ${f.country}`, draft });
   });
 
   // ---- Shared links: /scan?id=87-perp.auto.indem ----
@@ -764,14 +764,14 @@
     if (standalone || store.get('rl-a2hs')) return;
     const bar = document.createElement('div');
     bar.className = 'a2hs';
-    bar.innerHTML = `<span>${label}</span>${onGo ? '<button class="go" type="button">Add</button>' : ''}<button class="no" type="button" aria-label="Dismiss">\u2715</button>`;
+    bar.innerHTML = `<span>${label}</span>${onGo ? '<button class="go" type="button">Add</button>' : ''}<button class="no" type="button" aria-label="Dismiss">✕</button>`;
     const done = () => { bar.remove(); store.set('rl-a2hs', '1'); };
     bar.querySelector('.no').onclick = done;
     if (onGo) bar.querySelector('.go').onclick = () => { onGo(); done(); };
     document.body.appendChild(bar);
   }
   addEventListener('beforeinstallprompt', e => { e.preventDefault(); setTimeout(() => offerInstall('Add Redline to your Home Screen', () => e.prompt()), 20000); });
-  if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent)) setTimeout(() => offerInstall('Tap Share, then \u201cAdd to Home Screen\u201d'), 20000);
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent)) setTimeout(() => offerInstall('Tap Share, then “Add to Home Screen”'), 20000);
 
   // ---- Tila ----
   const fab = $('#tilaFab'), x = $('#tilaX'), bubble = $('#tilaBubble'), panel = $('#tilaPanel'), log = $('#tilaLog'), input = $('#tilaInput');
@@ -808,20 +808,20 @@
   }
 
   const TRAP_WORDS = {
-    perp: /perpetu|irrevoc|forever|perp\u00e9tu|perpetu|unbefrist|\u6c38\u4e45|\u6c38\u7d9a|\u062f\u0627\u0626\u0645/i,
-    auto: /renew|renov|reconduc|verl\u00e4nger|rinnov|verlenging|\u7eed\u7ea6|\u81ea\u52d5\u66f4\u65b0|\u062a\u062c\u062f\u064a\u062f/i,
-    indem: /indemn|hold harmless|freistell|vrijwar|\u8d54\u507f|\u88dc\u511f|\u062a\u0639\u0648\u064a\u0636/i,
-    amend: /amend|modif|change the terms|\u00e4nder|wijzig/i,
-    noncomp: /non[- ]?compet|no competencia|non-concurrence|wettbewerb|concorr\u00ean|concorrenza|concurrentie|\u7ade\u4e1a|\u7af6\u696d/i,
-    ip: /\bip\b|intellectual|propiedad intelectual|propri\u00e9t\u00e9 intellectuelle|geistiges eigentum|invention|\u77e5\u8bc6\u4ea7\u6743|\u77e5\u7684\u8ca1\u7523/i,
-    ld: /liquidated|penalt|penali|vertragsstraf|boete|multa|\u8fdd\u7ea6\u91d1|\u9055\u7d04\u91d1/i,
-    term: /terminat|rescis|r\u00e9sili|k\u00fcndig|recesso|opzeg|\u89e3\u7ea6|\u89e3\u9664/i,
-    liab: /liabil|responsab|haftung|aansprakelijk|\u8d23\u4efb|\u8cac\u4efb/i,
-    arb: /arbitra|jury|schiedsg|\u4ef2\u88c1|\u4ef2\u88c1/i,
-    venue: /jurisdic|venue|governing law|ley aplicable|droit applicable|gerichtsstand|foro|\u7ba1\u8f96/i,
-    conf: /confiden|nda\b|geheimhalt|vertrouwelijk|\u4fdd\u5bc6|\u79d8\u5bc6/i,
-    fees: /late fee|interest|inter\u00e9s|int\u00e9r\u00eats|zinsen|juros|interessi|rente|\u5229\u606f|\u5ef6\u6ede/i,
-    assign: /assign|cesi\u00f3n|cession|abtret|cess\u00e3o|cessione|overdracht|\u8f6c\u8ba9|\u8b72\u6e21/i,
+    perp: /perpetu|irrevoc|forever|perpétu|perpetu|unbefrist|永久|永続|دائم/i,
+    auto: /renew|renov|reconduc|verlänger|rinnov|verlenging|续约|自動更新|تجديد/i,
+    indem: /indemn|hold harmless|freistell|vrijwar|赔偿|補償|تعويض/i,
+    amend: /amend|modif|change the terms|änder|wijzig/i,
+    noncomp: /non[- ]?compet|no competencia|non-concurrence|wettbewerb|concorrên|concorrenza|concurrentie|竞业|競業/i,
+    ip: /\bip\b|intellectual|propiedad intelectual|propriété intellectuelle|geistiges eigentum|invention|知识产权|知的財産/i,
+    ld: /liquidated|penalt|penali|vertragsstraf|boete|multa|违约金|違約金/i,
+    term: /terminat|rescis|résili|kündig|recesso|opzeg|解约|解除/i,
+    liab: /liabil|responsab|haftung|aansprakelijk|责任|責任/i,
+    arb: /arbitra|jury|schiedsg|仲裁|仲裁/i,
+    venue: /jurisdic|venue|governing law|ley aplicable|droit applicable|gerichtsstand|foro|管辖/i,
+    conf: /confiden|nda\b|geheimhalt|vertrouwelijk|保密|秘密/i,
+    fees: /late fee|interest|interés|intérêts|zinsen|juros|interessi|rente|利息|延滞/i,
+    assign: /assign|cesión|cession|abtret|cessão|cessione|overdracht|转让|譲渡/i,
   };
 
   function answer(qText) {
@@ -830,16 +830,16 @@
     const s = qText.toLowerCase();
     const country = findCountry(qText);
     if (country) return countryLawNote(country, lang);
-    if (/my scan|my contract|last scan|mi contrato|mon contrat|mein vertrag|meu contrato|mio contratto|mijn contract|\u6211\u7684\u5408\u540c|\u5951\u7d04\u66f8/.test(s)) {
-      return last ? fill(t.last, { risk: last.risk, n: last.traps.length, list: last.traps.map(x => x.label).join(', ') || '\u2014' }) : t.none;
+    if (/my scan|my contract|last scan|mi contrato|mon contrat|mein vertrag|meu contrato|mio contratto|mijn contract|我的合同|契約書/.test(s)) {
+      return last ? fill(t.last, { risk: last.risk, n: last.traps.length, list: last.traps.map(x => x.label).join(', ') || '—' }) : t.none;
     }
     const trap = TRAPS.find(tr => TRAP_WORDS[tr.id].test(qText));
     if (trap) return fill(t.trap, trap) + '\n' + t.nla;
-    if (/price|cost|plan|pro\b|precio|prix|preis|pre\u00e7o|prezzo|prijs|\u4ef7\u683c|\u6599\u91d1|\u0633\u0639\u0631/.test(s)) return t.price;
-    if (/\bsms\b|text|email|e-mail|mail|share|whatsapp|compart|partag|teilen|condivid|delen|\u77ed\u4fe1|\u30e1\u30fc\u30eb/.test(s)) return fill(t.channels, CONFIG);
-    if (/create|draft|write|redact|r\u00e9dig|entwurf|redig|opstellen|\u8d77\u8349|\u4f5c\u6210/.test(s)) return t.create;
-    if (/how|scan|work|c\u00f3mo|comment|wie|como|come|hoe|\u600e\u4e48|\u3069\u3046/.test(s)) return t.how;
-    if (/^(hi|hello|hey|hola|bonjour|salut|hallo|ol\u00e1|ciao|hoi|\u4f60\u597d|\u3053\u3093\u306b\u3061\u306f|\u0645\u0631\u062d\u0628\u0627)\b/.test(s)) return t.greet;
+    if (/price|cost|plan|pro\b|precio|prix|preis|preço|prezzo|prijs|价格|料金|سعر/.test(s)) return t.price;
+    if (/\bsms\b|text|email|e-mail|mail|share|whatsapp|compart|partag|teilen|condivid|delen|短信|メール/.test(s)) return fill(t.channels, CONFIG);
+    if (/create|draft|write|redact|rédig|entwurf|redig|opstellen|起草|作成/.test(s)) return t.create;
+    if (/how|scan|work|cómo|comment|wie|como|come|hoe|怎么|どう/.test(s)) return t.how;
+    if (/^(hi|hello|hey|hola|bonjour|salut|hallo|olá|ciao|hoi|你好|こんにちは|مرحبا)\b/.test(s)) return t.greet;
     return t.fallback;
   }
 

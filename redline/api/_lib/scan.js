@@ -85,14 +85,14 @@ export function scan(text) {
   return { risk, traps: found, chars: src.length };
 }
 
-// Stateless share token: "87-perp.auto.indem". Decoded by index.html at /scan?id=…
+// Stateless share token: "87-perp.auto.indem". Decoded by index.html at /?id=… (any path works).
 export function token(result) {
   return `${result.risk}-${result.traps.map(t => t.id).join('.')}`;
 }
 
 export function scanUrl(result) {
   const base = (process.env.PUBLIC_URL || 'https://redline.app').replace(/\/$/, '');
-  return `${base}/scan?id=${encodeURIComponent(token(result))}`;
+  return `${base}/?id=${encodeURIComponent(token(result))}`;
 }
 
 const MAX_BYTES = 10 * 1024 * 1024;
