@@ -1,5 +1,5 @@
 // Redline service worker: offline shell, Share sheet target, file launch.
-const VERSION = 'redline-v27-1';
+const VERSION = 'redline-v27-2';
 const SHELL = [
   '/',
   '/manifest.json',
@@ -9,7 +9,10 @@ const SHELL = [
 const SHARE_CACHE = 'redline-share';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // Cache each file on its own so one missing asset doesn't block install.
+  e.waitUntil(caches.open(VERSION)
+    .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {

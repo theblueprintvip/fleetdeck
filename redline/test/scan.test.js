@@ -55,3 +55,12 @@ test('extracts PDF text from a Buffer that does not start at offset 0 of its mem
   const text = await extractText(view, 'application/pdf');
   assert.match(text, /perpetual and irrevocable/);
 });
+
+test('index.html runs the same trap knowledge base as the server', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const page = [...html.matchAll(/\{ id: '(\w+)', label: '([^']+)', weight: (\d+)/g)].map(m => `${m[1]}:${m[2]}:${m[3]}`);
+  assert.deepEqual(page, TRAPS.map(t => `${t.id}:${t.label}:${t.weight}`));
+  for (const t of TRAPS) assert.ok(html.includes(t.fix.replace(/’/g, '\\u2019')) || html.includes(t.fix), `fix text for ${t.id}`);
+  assert.match(html, /const BASE = 12;/);
+});

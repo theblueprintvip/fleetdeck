@@ -42,7 +42,7 @@ export const TRAPS = [
     re: [/binding\s+arbitration/i, /class[- ]action\s+waiver/i, /waive[^.]{0,40}\bjury\b/i],
     why: 'Removes your right to court and to join a class action.',
     fix: 'Disputes go first to good-faith negotiation for 30 days, then to the courts of the jurisdiction where the services are performed.' },
-  { id: 'venue', label: 'Remote venue', weight: 6,
+  { id: 'venue', label: 'Remote venue', weight: 5,
     re: [/exclusive\s+jurisdiction/i, /governed by the laws of[^.]{0,60}\bwithout regard/i],
     why: 'A dispute means litigating far from home under unfamiliar law.',
     fix: 'This Agreement is governed by the law of the place where the services are performed, and its courts have jurisdiction.' },
@@ -60,7 +60,8 @@ export const TRAPS = [
     fix: 'Neither party may assign this Agreement without the other’s written consent, not unreasonably withheld.' },
 ];
 
-const BASE = 6;
+// Every contract carries a floor of residual risk; a clean draft scores 12.
+const BASE = 12;
 
 export function scan(text) {
   const src = String(text || '').replace(/\s+/g, ' ');
