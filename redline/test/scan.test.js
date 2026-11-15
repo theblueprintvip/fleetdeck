@@ -64,3 +64,20 @@ test('index.html runs the same trap knowledge base as the server', async () => {
   for (const t of TRAPS) assert.ok(html.includes(t.fix.replace(/’/g, '\\u2019')) || html.includes(t.fix), `fix text for ${t.id}`);
   assert.match(html, /const BASE = 12;/);
 });
+
+test('mcp-server/kb.json matches the engine (run node scripts/build-kb.mjs after changing traps)', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const kb = JSON.parse(await readFile(new URL('../mcp-server/kb.json', import.meta.url), 'utf8'));
+  const { BASE } = await import('../api/_lib/scan.js');
+  assert.equal(kb.base, BASE);
+  assert.deepEqual(kb.traps.map(t => [t.id, t.label, t.weight, t.patterns, t.why, t.fix]),
+    TRAPS.map(t => [t.id, t.label, t.weight, t.re.map(r => r.source), t.why, t.fix]));
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  for (const c of kb.countries) assert.ok(html.includes(`${c.name.replace('\u00f4', '\\u00f4').replace('\u2019', '\\u2019')}:${c.family}`) || html.includes(`${c.name}:${c.family}`), c.name);
+  assert.equal(kb.countries.length, 195);
+});
+
+test('quotes keep the first letter when the trap is in the opening sentence', () => {
+  const r = scan('Licensor grants a perpetual licence. Payment is due in 30 days.');
+  assert.equal(r.traps[0].quote, 'Licensor grants a perpetual licence.');
+});

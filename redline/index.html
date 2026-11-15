@@ -354,7 +354,8 @@
       for (const re of t.re) {
         const m = src.match(re);
         if (m) {
-          const start = Math.max(src.lastIndexOf('. ', m.index) + 2, m.index - 160, 0);
+          const dot = src.lastIndexOf('. ', m.index);
+          const start = Math.max(dot < 0 ? 0 : dot + 2, m.index - 160);
           const stop = src.indexOf('. ', m.index + m[0].length);
           const quote = src.slice(start, stop < 0 ? undefined : Math.min(stop + 1, m.index + m[0].length + 160)).trim();
           found.push({ ...t, quote });

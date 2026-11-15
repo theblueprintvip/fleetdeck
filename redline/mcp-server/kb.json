@@ -1,0 +1,946 @@
+{
+  "base": 12,
+  "traps": [
+    {
+      "id": "perp",
+      "label": "Perpetuity",
+      "weight": 18,
+      "patterns": [
+        "\\bin perpetuity\\b",
+        "\\bperpetual(ly)?\\b",
+        "\\birrevocabl[ey]\\b"
+      ],
+      "why": "Grants or obligations that never end.",
+      "fix": "The rights granted under this Agreement last for the Term and end automatically on expiry or termination."
+    },
+    {
+      "id": "auto",
+      "label": "Auto-renewal",
+      "weight": 14,
+      "patterns": [
+        "automatic(ally)?\\s+renew",
+        "\\bauto[- ]?renew",
+        "renew(s|ed)?\\s+for\\s+(successive|additional)"
+      ],
+      "why": "The contract rolls over unless you catch a short cancellation window.",
+      "fix": "This Agreement renews only by written agreement of both parties. Either party may decline renewal at any time before expiry."
+    },
+    {
+      "id": "indem",
+      "label": "Unlimited indemnity",
+      "weight": 18,
+      "patterns": [
+        "indemnif(y|ies|ication)[^.]{0,160}\\b(any and all|all claims|without limit)",
+        "hold\\s+harmless[^.]{0,120}\\b(any|all)\\b"
+      ],
+      "why": "You pay for their losses with no ceiling, even ones they cause.",
+      "fix": "Each party indemnifies the other only for third-party claims caused by its own breach or negligence, capped at the fees paid in the prior 12 months."
+    },
+    {
+      "id": "amend",
+      "label": "One-sided changes",
+      "weight": 10,
+      "patterns": [
+        "may\\s+(modify|amend|change|update)[^.]{0,80}\\b(at any time|sole discretion|without notice)"
+      ],
+      "why": "They can rewrite the deal after you sign.",
+      "fix": "Any amendment must be in writing and signed by both parties."
+    },
+    {
+      "id": "noncomp",
+      "label": "Broad non-compete",
+      "weight": 12,
+      "patterns": [
+        "non[- ]?compet",
+        "shall not[^.]{0,80}\\b(compete|competing business|similar business)"
+      ],
+      "why": "Restricts where and for whom you can work.",
+      "fix": "For 6 months after termination, neither party will solicit the other’s clients it worked with directly under this Agreement. No other restriction applies."
+    },
+    {
+      "id": "ip",
+      "label": "IP grab",
+      "weight": 14,
+      "patterns": [
+        "all\\s+(inventions|intellectual property|work product)[^.]{0,120}\\b(whether or not|prior|during or after|conceived)",
+        "assigns?\\s+(all|any)\\s+(right|rights),?\\s+title"
+      ],
+      "why": "Takes ownership of work beyond the project, sometimes your prior work.",
+      "fix": "Client owns the deliverables specified in the Statement of Work once paid in full. Contractor keeps all pre-existing IP and general know-how."
+    },
+    {
+      "id": "ld",
+      "label": "Penalty damages",
+      "weight": 10,
+      "patterns": [
+        "liquidated\\s+damages",
+        "\\bpenalt(y|ies)\\s+of\\b"
+      ],
+      "why": "Fixed payouts that can exceed any real loss.",
+      "fix": "Each party is liable only for actual, proven direct damages."
+    },
+    {
+      "id": "term",
+      "label": "Lopsided termination",
+      "weight": 8,
+      "patterns": [
+        "(company|client|licensor|employer|we)\\s+may\\s+terminate[^.]{0,80}\\b(at any time|for any reason|for convenience|without cause)"
+      ],
+      "why": "Only one side can walk away freely.",
+      "fix": "Either party may terminate on 30 days’ written notice. Work completed up to termination is paid."
+    },
+    {
+      "id": "liab",
+      "label": "Liability shield",
+      "weight": 10,
+      "patterns": [
+        "in no event shall (company|client|licensor|provider|we)[^.]{0,40}be liable",
+        "(company|provider|licensor)\\s+shall\\s+(have no|not be)\\s+liab"
+      ],
+      "why": "Caps or removes their liability but not yours.",
+      "fix": "Each party’s total liability is capped at the fees paid in the prior 12 months, except for fraud, gross negligence or wilful misconduct."
+    },
+    {
+      "id": "arb",
+      "label": "Forced arbitration",
+      "weight": 8,
+      "patterns": [
+        "binding\\s+arbitration",
+        "class[- ]action\\s+waiver",
+        "waive[^.]{0,40}\\bjury\\b"
+      ],
+      "why": "Removes your right to court and to join a class action.",
+      "fix": "Disputes go first to good-faith negotiation for 30 days, then to the courts of the jurisdiction where the services are performed."
+    },
+    {
+      "id": "venue",
+      "label": "Remote venue",
+      "weight": 5,
+      "patterns": [
+        "exclusive\\s+jurisdiction",
+        "governed by the laws of[^.]{0,60}\\bwithout regard"
+      ],
+      "why": "A dispute means litigating far from home under unfamiliar law.",
+      "fix": "This Agreement is governed by the law of the place where the services are performed, and its courts have jurisdiction."
+    },
+    {
+      "id": "conf",
+      "label": "Endless confidentiality",
+      "weight": 6,
+      "patterns": [
+        "confidential[^.]{0,120}\\b(indefinitely|in perpetuity|survive[s]? indefinitely|no expiration)"
+      ],
+      "why": "Secrecy obligations that never expire and bind only you.",
+      "fix": "Confidentiality obligations are mutual and last 3 years after termination, or as long as the information is a trade secret."
+    },
+    {
+      "id": "fees",
+      "label": "Punitive late fees",
+      "weight": 6,
+      "patterns": [
+        "late\\s+(fee|charge)",
+        "interest\\s+(at|of)\\s+(\\d{2,}|[2-9](\\.\\d+)?)\\s*%"
+      ],
+      "why": "Fees or interest that compound fast.",
+      "fix": "Late payments accrue simple interest at the statutory rate, starting 30 days after a written reminder."
+    },
+    {
+      "id": "assign",
+      "label": "Free assignment",
+      "weight": 6,
+      "patterns": [
+        "may\\s+assign[^.]{0,60}\\bwithout\\s+(your|the other party’s|the other party's|prior)?\\s*consent"
+      ],
+      "why": "You can end up contracted to a stranger.",
+      "fix": "Neither party may assign this Agreement without the other’s written consent, not unreasonably withheld."
+    }
+  ],
+  "countries": [
+    {
+      "name": "Afghanistan",
+      "family": "I"
+    },
+    {
+      "name": "Albania",
+      "family": "C"
+    },
+    {
+      "name": "Algeria",
+      "family": "C"
+    },
+    {
+      "name": "Andorra",
+      "family": "C"
+    },
+    {
+      "name": "Angola",
+      "family": "C"
+    },
+    {
+      "name": "Antigua and Barbuda",
+      "family": "K"
+    },
+    {
+      "name": "Argentina",
+      "family": "C"
+    },
+    {
+      "name": "Armenia",
+      "family": "C"
+    },
+    {
+      "name": "Australia",
+      "family": "K"
+    },
+    {
+      "name": "Austria",
+      "family": "C"
+    },
+    {
+      "name": "Azerbaijan",
+      "family": "C"
+    },
+    {
+      "name": "Bahamas",
+      "family": "K"
+    },
+    {
+      "name": "Bahrain",
+      "family": "I"
+    },
+    {
+      "name": "Bangladesh",
+      "family": "K"
+    },
+    {
+      "name": "Barbados",
+      "family": "K"
+    },
+    {
+      "name": "Belarus",
+      "family": "C"
+    },
+    {
+      "name": "Belgium",
+      "family": "C"
+    },
+    {
+      "name": "Belize",
+      "family": "K"
+    },
+    {
+      "name": "Benin",
+      "family": "C"
+    },
+    {
+      "name": "Bhutan",
+      "family": "M"
+    },
+    {
+      "name": "Bolivia",
+      "family": "C"
+    },
+    {
+      "name": "Bosnia and Herzegovina",
+      "family": "C"
+    },
+    {
+      "name": "Botswana",
+      "family": "M"
+    },
+    {
+      "name": "Brazil",
+      "family": "C"
+    },
+    {
+      "name": "Brunei",
+      "family": "M"
+    },
+    {
+      "name": "Bulgaria",
+      "family": "C"
+    },
+    {
+      "name": "Burkina Faso",
+      "family": "C"
+    },
+    {
+      "name": "Burundi",
+      "family": "C"
+    },
+    {
+      "name": "Cabo Verde",
+      "family": "C"
+    },
+    {
+      "name": "Cambodia",
+      "family": "C"
+    },
+    {
+      "name": "Cameroon",
+      "family": "M"
+    },
+    {
+      "name": "Canada",
+      "family": "M"
+    },
+    {
+      "name": "Central African Republic",
+      "family": "C"
+    },
+    {
+      "name": "Chad",
+      "family": "C"
+    },
+    {
+      "name": "Chile",
+      "family": "C"
+    },
+    {
+      "name": "China",
+      "family": "C"
+    },
+    {
+      "name": "Colombia",
+      "family": "C"
+    },
+    {
+      "name": "Comoros",
+      "family": "M"
+    },
+    {
+      "name": "Congo",
+      "family": "C"
+    },
+    {
+      "name": "Costa Rica",
+      "family": "C"
+    },
+    {
+      "name": "Côte d’Ivoire",
+      "family": "C"
+    },
+    {
+      "name": "Croatia",
+      "family": "C"
+    },
+    {
+      "name": "Cuba",
+      "family": "C"
+    },
+    {
+      "name": "Cyprus",
+      "family": "M"
+    },
+    {
+      "name": "Czechia",
+      "family": "C"
+    },
+    {
+      "name": "Democratic Republic of the Congo",
+      "family": "C"
+    },
+    {
+      "name": "Denmark",
+      "family": "C"
+    },
+    {
+      "name": "Djibouti",
+      "family": "M"
+    },
+    {
+      "name": "Dominica",
+      "family": "K"
+    },
+    {
+      "name": "Dominican Republic",
+      "family": "C"
+    },
+    {
+      "name": "Ecuador",
+      "family": "C"
+    },
+    {
+      "name": "Egypt",
+      "family": "C"
+    },
+    {
+      "name": "El Salvador",
+      "family": "C"
+    },
+    {
+      "name": "Equatorial Guinea",
+      "family": "C"
+    },
+    {
+      "name": "Eritrea",
+      "family": "M"
+    },
+    {
+      "name": "Estonia",
+      "family": "C"
+    },
+    {
+      "name": "Eswatini",
+      "family": "M"
+    },
+    {
+      "name": "Ethiopia",
+      "family": "C"
+    },
+    {
+      "name": "Fiji",
+      "family": "K"
+    },
+    {
+      "name": "Finland",
+      "family": "C"
+    },
+    {
+      "name": "France",
+      "family": "C"
+    },
+    {
+      "name": "Gabon",
+      "family": "C"
+    },
+    {
+      "name": "Gambia",
+      "family": "M"
+    },
+    {
+      "name": "Georgia",
+      "family": "C"
+    },
+    {
+      "name": "Germany",
+      "family": "C"
+    },
+    {
+      "name": "Ghana",
+      "family": "K"
+    },
+    {
+      "name": "Greece",
+      "family": "C"
+    },
+    {
+      "name": "Grenada",
+      "family": "K"
+    },
+    {
+      "name": "Guatemala",
+      "family": "C"
+    },
+    {
+      "name": "Guinea",
+      "family": "C"
+    },
+    {
+      "name": "Guinea-Bissau",
+      "family": "C"
+    },
+    {
+      "name": "Guyana",
+      "family": "M"
+    },
+    {
+      "name": "Haiti",
+      "family": "C"
+    },
+    {
+      "name": "Holy See",
+      "family": "C"
+    },
+    {
+      "name": "Honduras",
+      "family": "C"
+    },
+    {
+      "name": "Hungary",
+      "family": "C"
+    },
+    {
+      "name": "Iceland",
+      "family": "C"
+    },
+    {
+      "name": "India",
+      "family": "K"
+    },
+    {
+      "name": "Indonesia",
+      "family": "M"
+    },
+    {
+      "name": "Iran",
+      "family": "I"
+    },
+    {
+      "name": "Iraq",
+      "family": "I"
+    },
+    {
+      "name": "Ireland",
+      "family": "K"
+    },
+    {
+      "name": "Israel",
+      "family": "M"
+    },
+    {
+      "name": "Italy",
+      "family": "C"
+    },
+    {
+      "name": "Jamaica",
+      "family": "K"
+    },
+    {
+      "name": "Japan",
+      "family": "C"
+    },
+    {
+      "name": "Jordan",
+      "family": "C"
+    },
+    {
+      "name": "Kazakhstan",
+      "family": "C"
+    },
+    {
+      "name": "Kenya",
+      "family": "K"
+    },
+    {
+      "name": "Kiribati",
+      "family": "K"
+    },
+    {
+      "name": "Kuwait",
+      "family": "I"
+    },
+    {
+      "name": "Kyrgyzstan",
+      "family": "C"
+    },
+    {
+      "name": "Laos",
+      "family": "C"
+    },
+    {
+      "name": "Latvia",
+      "family": "C"
+    },
+    {
+      "name": "Lebanon",
+      "family": "C"
+    },
+    {
+      "name": "Lesotho",
+      "family": "M"
+    },
+    {
+      "name": "Liberia",
+      "family": "K"
+    },
+    {
+      "name": "Libya",
+      "family": "I"
+    },
+    {
+      "name": "Liechtenstein",
+      "family": "C"
+    },
+    {
+      "name": "Lithuania",
+      "family": "C"
+    },
+    {
+      "name": "Luxembourg",
+      "family": "C"
+    },
+    {
+      "name": "Madagascar",
+      "family": "C"
+    },
+    {
+      "name": "Malawi",
+      "family": "K"
+    },
+    {
+      "name": "Malaysia",
+      "family": "M"
+    },
+    {
+      "name": "Maldives",
+      "family": "I"
+    },
+    {
+      "name": "Mali",
+      "family": "C"
+    },
+    {
+      "name": "Malta",
+      "family": "M"
+    },
+    {
+      "name": "Marshall Islands",
+      "family": "K"
+    },
+    {
+      "name": "Mauritania",
+      "family": "I"
+    },
+    {
+      "name": "Mauritius",
+      "family": "M"
+    },
+    {
+      "name": "Mexico",
+      "family": "C"
+    },
+    {
+      "name": "Micronesia",
+      "family": "K"
+    },
+    {
+      "name": "Moldova",
+      "family": "C"
+    },
+    {
+      "name": "Monaco",
+      "family": "C"
+    },
+    {
+      "name": "Mongolia",
+      "family": "C"
+    },
+    {
+      "name": "Montenegro",
+      "family": "C"
+    },
+    {
+      "name": "Morocco",
+      "family": "C"
+    },
+    {
+      "name": "Mozambique",
+      "family": "C"
+    },
+    {
+      "name": "Myanmar",
+      "family": "K"
+    },
+    {
+      "name": "Namibia",
+      "family": "M"
+    },
+    {
+      "name": "Nauru",
+      "family": "K"
+    },
+    {
+      "name": "Nepal",
+      "family": "M"
+    },
+    {
+      "name": "Netherlands",
+      "family": "C"
+    },
+    {
+      "name": "New Zealand",
+      "family": "K"
+    },
+    {
+      "name": "Nicaragua",
+      "family": "C"
+    },
+    {
+      "name": "Niger",
+      "family": "C"
+    },
+    {
+      "name": "Nigeria",
+      "family": "M"
+    },
+    {
+      "name": "North Korea",
+      "family": "C"
+    },
+    {
+      "name": "North Macedonia",
+      "family": "C"
+    },
+    {
+      "name": "Norway",
+      "family": "C"
+    },
+    {
+      "name": "Oman",
+      "family": "I"
+    },
+    {
+      "name": "Pakistan",
+      "family": "M"
+    },
+    {
+      "name": "Palau",
+      "family": "K"
+    },
+    {
+      "name": "Palestine",
+      "family": "M"
+    },
+    {
+      "name": "Panama",
+      "family": "C"
+    },
+    {
+      "name": "Papua New Guinea",
+      "family": "K"
+    },
+    {
+      "name": "Paraguay",
+      "family": "C"
+    },
+    {
+      "name": "Peru",
+      "family": "C"
+    },
+    {
+      "name": "Philippines",
+      "family": "M"
+    },
+    {
+      "name": "Poland",
+      "family": "C"
+    },
+    {
+      "name": "Portugal",
+      "family": "C"
+    },
+    {
+      "name": "Qatar",
+      "family": "I"
+    },
+    {
+      "name": "Romania",
+      "family": "C"
+    },
+    {
+      "name": "Russia",
+      "family": "C"
+    },
+    {
+      "name": "Rwanda",
+      "family": "M"
+    },
+    {
+      "name": "Saint Kitts and Nevis",
+      "family": "K"
+    },
+    {
+      "name": "Saint Lucia",
+      "family": "M"
+    },
+    {
+      "name": "Saint Vincent and the Grenadines",
+      "family": "K"
+    },
+    {
+      "name": "Samoa",
+      "family": "K"
+    },
+    {
+      "name": "San Marino",
+      "family": "C"
+    },
+    {
+      "name": "Sao Tome and Principe",
+      "family": "C"
+    },
+    {
+      "name": "Saudi Arabia",
+      "family": "I"
+    },
+    {
+      "name": "Senegal",
+      "family": "C"
+    },
+    {
+      "name": "Serbia",
+      "family": "C"
+    },
+    {
+      "name": "Seychelles",
+      "family": "M"
+    },
+    {
+      "name": "Sierra Leone",
+      "family": "K"
+    },
+    {
+      "name": "Singapore",
+      "family": "K"
+    },
+    {
+      "name": "Slovakia",
+      "family": "C"
+    },
+    {
+      "name": "Slovenia",
+      "family": "C"
+    },
+    {
+      "name": "Solomon Islands",
+      "family": "K"
+    },
+    {
+      "name": "Somalia",
+      "family": "M"
+    },
+    {
+      "name": "South Africa",
+      "family": "M"
+    },
+    {
+      "name": "South Korea",
+      "family": "C"
+    },
+    {
+      "name": "South Sudan",
+      "family": "M"
+    },
+    {
+      "name": "Spain",
+      "family": "C"
+    },
+    {
+      "name": "Sri Lanka",
+      "family": "M"
+    },
+    {
+      "name": "Sudan",
+      "family": "I"
+    },
+    {
+      "name": "Suriname",
+      "family": "C"
+    },
+    {
+      "name": "Sweden",
+      "family": "C"
+    },
+    {
+      "name": "Switzerland",
+      "family": "C"
+    },
+    {
+      "name": "Syria",
+      "family": "C"
+    },
+    {
+      "name": "Tajikistan",
+      "family": "C"
+    },
+    {
+      "name": "Tanzania",
+      "family": "K"
+    },
+    {
+      "name": "Thailand",
+      "family": "C"
+    },
+    {
+      "name": "Timor-Leste",
+      "family": "C"
+    },
+    {
+      "name": "Togo",
+      "family": "C"
+    },
+    {
+      "name": "Tonga",
+      "family": "K"
+    },
+    {
+      "name": "Trinidad and Tobago",
+      "family": "K"
+    },
+    {
+      "name": "Tunisia",
+      "family": "C"
+    },
+    {
+      "name": "Turkey",
+      "family": "C"
+    },
+    {
+      "name": "Turkmenistan",
+      "family": "C"
+    },
+    {
+      "name": "Tuvalu",
+      "family": "K"
+    },
+    {
+      "name": "Uganda",
+      "family": "K"
+    },
+    {
+      "name": "Ukraine",
+      "family": "C"
+    },
+    {
+      "name": "United Arab Emirates",
+      "family": "I"
+    },
+    {
+      "name": "United Kingdom",
+      "family": "K"
+    },
+    {
+      "name": "United States",
+      "family": "K"
+    },
+    {
+      "name": "Uruguay",
+      "family": "C"
+    },
+    {
+      "name": "Uzbekistan",
+      "family": "C"
+    },
+    {
+      "name": "Vanuatu",
+      "family": "M"
+    },
+    {
+      "name": "Venezuela",
+      "family": "C"
+    },
+    {
+      "name": "Vietnam",
+      "family": "C"
+    },
+    {
+      "name": "Yemen",
+      "family": "I"
+    },
+    {
+      "name": "Zambia",
+      "family": "K"
+    },
+    {
+      "name": "Zimbabwe",
+      "family": "M"
+    }
+  ],
+  "family_notes": {
+    "K": "common-law system. Courts enforce the written words closely and follow precedent, so spell out liability caps, termination and governing law.",
+    "C": "civil-law system. The civil code fills gaps and courts can cut back unfair terms; penalty and non-compete clauses are often reduced.",
+    "M": "mixed legal system. Common-law and civil-law rules can both apply, sometimes by region, so name the governing law and courts explicitly.",
+    "I": "Islamic-law principles can apply alongside statute. Interest and some penalty clauses may not be enforceable; fixed fees are safer."
+  }
+}

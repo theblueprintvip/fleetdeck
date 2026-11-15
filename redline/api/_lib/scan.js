@@ -61,7 +61,7 @@ export const TRAPS = [
 ];
 
 // Every contract carries a floor of residual risk; a clean draft scores 12.
-const BASE = 12;
+export const BASE = 12;
 
 export function scan(text) {
   const src = String(text || '').replace(/\s+/g, ' ');
@@ -71,7 +71,8 @@ export function scan(text) {
       const m = src.match(re);
       if (m) {
         // Quote the sentence the match sits in, capped for SMS and email.
-        const start = Math.max(src.lastIndexOf('. ', m.index) + 2, m.index - 160, 0);
+        const dot = src.lastIndexOf('. ', m.index);
+        const start = Math.max(dot < 0 ? 0 : dot + 2, m.index - 160);
         const stop = src.indexOf('. ', m.index + m[0].length);
         const quote = src.slice(start, stop < 0 ? undefined : Math.min(stop + 1, m.index + m[0].length + 160)).trim();
         found.push({ id: t.id, label: t.label, weight: t.weight, why: t.why, fix: t.fix, quote });
