@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redline privacy policy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14171B;--paper:#F3F1EC;--red:#D6402A;--muted:#5A5D61;--line:#E4E0D6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.65 Inter,system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:48px 16px 80px}
+a{color:var(--red)}
+.brand{font:600 22px Fraunces,Georgia,serif;text-decoration:none;color:var(--ink)}
+h1{font:600 40px/1.15 Fraunces,Georgia,serif;margin:28px 0 6px}
+h2{font:600 20px/1.3 Inter,system-ui,sans-serif;margin:34px 0 8px}
+.u{color:var(--muted);font-size:14px}
+ul{padding-left:20px}
+li{margin:6px 0}
+</style>
+</head>
+<body>
+<main>
+<a class="brand" href="/">Redline</a>
+<h1>Privacy policy</h1>
+<p class="u">Applies to the Redline website and the Redline browser extension. Last updated 16 November 2026.</p>
+
+<h2>The short version</h2>
+<p>Redline reads a contract only when you ask it to. We use the text to produce your review and do not sell it, share it for advertising, or use it to train AI models.</p>
+
+<h2>What the browser extension does</h2>
+<ul>
+<li>On pages you visit, the extension checks <em>on your device</em> whether the page reads like a contract (counting legal words). Nothing is sent anywhere for this check.</li>
+<li>Page text, selected text or a PDF is sent to Redline only when you click “Redline this”, use the right-click menu, press the toolbar button, or press the Redline button beside a Gmail attachment.</li>
+<li>PDFs are converted to text inside the extension. Only the text is sent.</li>
+<li>The extension keeps the current review job in temporary browser storage that is cleared when the browser closes. It has no analytics or tracking.</li>
+</ul>
+
+<h2>What we receive and keep</h2>
+<ul>
+<li><b>Contract text.</b> Sent to our server and to the AI model that reviews it, over HTTPS. If you are not signed in, the text and the review are not saved after the response is sent.</li>
+<li><b>Saved reviews.</b> If you are signed in, the review (title, risk score, the flagged clauses with short quotes, suggested rewrites and key dates) is saved to your account so you can see it in your wallet and get reminders. The full contract text is not saved. You can delete any review at any time.</li>
+<li><b>Usage limits.</b> To enforce daily free limits we keep a counter per day keyed by a one-way hash of your account id or IP address.</li>
+<li><b>Anonymous clause statistics.</b> We count which kinds of clauses appear in which kinds of contracts (for example, “arbitration clause in a rental lease”), with the state you chose and the month. These counts contain no contract text, quotes, names, account ids or IP addresses. You can switch this off in your settings.</li>
+<li><b>Account.</b> If you sign in, we receive your name and email address from the sign-in provider.</li>
+<li><b>Payments.</b> Payments are handled by Stripe. We receive whether a payment succeeded and your plan; we never see your card number.</li>
+</ul>
+
+<h2>Who processes data for us</h2>
+<p>Hosting, sign-in, storage and AI review run on our hosting provider’s infrastructure. Payments run on Stripe. We do not sell personal data and do not share it with advertisers or data brokers.</p>
+
+<h2>Your choices</h2>
+<ul>
+<li>Use Redline without signing in, and nothing you paste is saved.</li>
+<li>Delete saved reviews from your wallet, or ask us to delete your account.</li>
+<li>Remove the extension at any time from your browser’s extensions page.</li>
+</ul>
+
+<h2>Not legal advice</h2>
+<p>Redline flags common contract risks to help you read carefully. It is not a law firm and does not give legal advice.</p>
+
+<h2>Contact</h2>
+<p>Questions or deletion requests: email the support address shown on Redline’s Chrome Web Store listing.</p>
+</main>
+</body>
+</html>

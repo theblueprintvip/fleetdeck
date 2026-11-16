@@ -38,12 +38,17 @@
     drawer = host('redline-drawer');
     drawer.root.innerHTML = `<style>${STYLE}</style><div class="drawer"><iframe title="Redline review" allow="clipboard-write"></iframe></div>`;
     drawer.root.querySelector('iframe').src = chrome.runtime.getURL('panel.html') + '#embedded';
+    if (pill) pill.el.style.display = 'none';
   }
 
   window.addEventListener('message', e => {
     if (!drawer || e.data !== 'redline:close') return;
     const frame = drawer.root.querySelector('iframe');
-    if (frame && e.source === frame.contentWindow) { drawer.el.remove(); drawer = null; }
+    if (frame && e.source === frame.contentWindow) {
+      drawer.el.remove();
+      drawer = null;
+      if (pill) pill.el.style.display = '';
+    }
   });
 
   chrome.runtime.onMessage.addListener(msg => {
