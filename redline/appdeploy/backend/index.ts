@@ -12,6 +12,8 @@ import {
   counterOfferPrompt,
 } from './engine';
 import type { RawReview, Review, Finding, KeyDate } from './engine';
+import { PRODUCTS, stripeKey, getEntitlement, isPro, createCheckout, confirmCheckout, spendCredit, portalUrl, productList } from './billing';
+import type { ProductKey } from './billing';
 
 const ANON_DAILY = 8;
 const USER_DAILY = 40;
@@ -101,6 +103,27 @@ function aiFailure(err: unknown) {
 
 const str = (v: unknown, n = 200) => String(v ?? '').slice(0, n).trim();
 
+function originOf(event: any): string {
+  const o = String(event?.headers?.origin ?? '');
+  if (/^https:\/\/[a-z0-9.-]+$/i.test(o)) return o;
+  return 'https://' + String(event?.headers?.host ?? event?.requestContext?.domainName ?? '');
+}
+
+// Paid features switch on once a Stripe key is configured.
+async function access(userId: string | null) {
+  const key = await stripeKey();
+  if (!key) return { paywall: false, pro: true, key, credits: 0, customer: undefined as string | undefined };
+  if (!userId) return { paywall: true, pro: false, key, credits: 0, customer: undefined as string | undefined };
+  const uh = hash(userId);
+  const ent = await getEntitlement(uh);
+  return { paywall: true, pro: await isPro(uh, ent, key), key, credits: ent.credits, customer: ent.customer };
+}
+
+// Free tier: every flag and explanation, plus the first safe rewrite.
+function redact(findings: Finding[]) {
+  return findings.map((f, i) => (i === 0 ? f : { ...f, rewrite: '', locked: true }));
+}
+
 export const handler = router({
   'GET /api/_healthcheck': [async () => json({ message: 'Success' })],
 
@@ -142,6 +165,9 @@ export const handler = router({
       console.warn('stats skipped', String(err));
     }
 
+    const acc = await access(user ? user.userId : null);
+    const locked = acc.paywall && !acc.pro;
+
     let scanId: string | null = null;
     if (user) {
       const [id] = await db.add(scansTable(user.userId), [{
@@ -154,12 +180,20 @@ export const handler = router({
         level: review.level,
         findings: review.findings,
         dates: review.dates,
+        unlocked: !locked,
         created_at: new Date().toISOString(),
       }]);
       scanId = id;
     }
 
-    return json({ ...review, benchmarks: bench, scan_id: scanId, signed_in: !!user });
+    return json({
+      ...review,
+      findings: locked ? redact(review.findings) : review.findings,
+      locked,
+      benchmarks: bench,
+      scan_id: scanId,
+      signed_in: !!user,
+    });
   }],
 
   'POST /api/counter-offer': [async (ctx) => {
@@ -172,6 +206,12 @@ export const handler = router({
     if (!findings.length) return error('Pick at least one clause to push back on.', 400);
 
     const user = await auth.getUser(ctx.event);
+    const acc = await access(user ? user.userId : null);
+    if (acc.paywall && !acc.pro) {
+      if (!user) return error('Sign in and unlock the full review to draft a counter-offer.', 402);
+      const [scan] = await db.get<{ unlocked?: boolean }>(scansTable(user.userId), [str(body.scan_id, 80) || 'none']);
+      if (!scan?.unlocked) return error('Unlock the full review to draft a counter-offer.', 402);
+    }
     const allowed = await takeQuota(user ? `u:${user.userId}` : `ip:${clientIp(ctx.event)}`, user ? USER_DAILY : ANON_DAILY);
     if (!allowed) return error(user ? 'Daily limit reached. It resets tomorrow.' : 'Sign in to draft more replies today.', 429);
 
@@ -209,6 +249,63 @@ export const handler = router({
     const { items } = await db.list<Record<string, unknown>>(scansTable(ctx.user!.userId), { limit: 50 });
     items.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
     return json({ scans: items });
+  }],
+
+  // Unlock a saved review: free for Pro, otherwise spends one credit.
+  'POST /api/scans/:id/unlock': [requireAuth(), async (ctx) => {
+    const table = scansTable(ctx.user!.userId);
+    const [scan] = await db.get<Record<string, unknown> & { unlocked?: boolean }>(table, [ctx.params.id], { consistent: true });
+    if (!scan) return error('Not found', 404);
+    const acc = await access(ctx.user!.userId);
+    if (!scan.unlocked && acc.paywall && !acc.pro) {
+      if (!(await spendCredit(hash(ctx.user!.userId)))) return error('no_credits', 402);
+      await db.tx.update(table, [{ id: ctx.params.id, record: { unlocked: true } }], { patch: true });
+    }
+    return json({ ...scan, unlocked: true, locked: false, scan_id: ctx.params.id, signed_in: true });
+  }],
+
+  'GET /api/billing': [async (ctx) => {
+    const user = await auth.getUser(ctx.event);
+    const acc = await access(user ? user.userId : null);
+    return json({ paywall: acc.paywall, pro: acc.paywall ? acc.pro : false, credits: acc.credits, can_manage: !!acc.customer, products: productList() });
+  }],
+
+  'POST /api/billing/checkout': [requireAuth(), async (ctx) => {
+    const product = str((ctx.body as Record<string, unknown> | null)?.product, 20) as ProductKey;
+    if (!(product in PRODUCTS)) return error('Unknown product', 400);
+    const key = await stripeKey();
+    if (!key) return error('Payments are not set up yet.', 503);
+    try {
+      const url = await createCheckout(key, hash(ctx.user!.userId), ctx.user!.email, product, originOf(ctx.event));
+      return json({ url });
+    } catch (err) {
+      console.error('checkout failed', String(err));
+      return error('Could not start checkout. Try again.', 502);
+    }
+  }],
+
+  'POST /api/billing/confirm': [requireAuth(), async (ctx) => {
+    const sessionId = str((ctx.body as Record<string, unknown> | null)?.session_id, 200);
+    const key = await stripeKey();
+    if (!key) return error('Payments are not set up yet.', 503);
+    try {
+      const r = await confirmCheckout(key, hash(ctx.user!.userId), sessionId);
+      const acc = await access(ctx.user!.userId);
+      return json({ applied: r.applied, product: r.product, credits: acc.credits, pro: acc.pro });
+    } catch (err) {
+      return error(String((err as Error).message || err), 400);
+    }
+  }],
+
+  'POST /api/billing/portal': [requireAuth(), async (ctx) => {
+    const acc = await access(ctx.user!.userId);
+    if (!acc.key || !acc.customer) return error('No billing account yet.', 404);
+    try {
+      return json({ url: await portalUrl(acc.key, acc.customer, originOf(ctx.event)) });
+    } catch (err) {
+      console.error('portal failed', String(err));
+      return error('Billing portal is not available. Check your Stripe customer portal settings.', 502);
+    }
   }],
 
   'DELETE /api/scans/:id': [requireAuth(), async (ctx) => {

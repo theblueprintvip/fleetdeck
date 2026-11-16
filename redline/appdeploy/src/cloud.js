@@ -17,6 +17,11 @@ const cloud = {
   deleteScan: id => api.delete('/api/scans/' + encodeURIComponent(id)).then(r => r.data),
   me: () => api.get('/api/me').then(r => r.data),
   saveMe: profile => api.put('/api/me', profile).then(r => r.data),
+  unlock: scanId => api.post('/api/scans/' + encodeURIComponent(scanId) + '/unlock', {}).then(r => r.data),
+  billing: () => api.get('/api/billing').then(r => r.data),
+  checkout: product => api.post('/api/billing/checkout', { product }).then(r => r.data),
+  confirm: sessionId => api.post('/api/billing/confirm', { session_id: sessionId }).then(r => r.data),
+  portal: () => api.post('/api/billing/portal', {}).then(r => r.data),
 };
 
 function emit() {
